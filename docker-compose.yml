@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: sitdown-postgres
+    environment:
+      POSTGRES_DB: sitdown
+      POSTGRES_USER: sitdown
+      POSTGRES_PASSWORD: sitdown
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sitdown"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: sitdown-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
