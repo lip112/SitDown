@@ -1,13 +1,12 @@
-package com.sitdown;
+package com.univsitdown;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SitDownApplication {
+public class UnivSitdownApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SitDownApplication.class, args);
+        SpringApplication.run(UnivSitdownApplication.class, args);
     }
-
 }
