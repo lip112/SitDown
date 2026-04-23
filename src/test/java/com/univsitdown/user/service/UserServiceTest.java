@@ -56,6 +56,8 @@ class UserServiceTest {
         UserResponse response = userService.updateUser(userId, new UpdateUserRequest("이름변경", null, null));
 
         assertThat(response.name()).isEqualTo("이름변경");
+        assertThat(response.email()).isEqualTo("test@univ.com");    // unchanged
+        assertThat(response.affiliation()).isEqualTo("학생");         // unchanged
     }
 
     @Test
