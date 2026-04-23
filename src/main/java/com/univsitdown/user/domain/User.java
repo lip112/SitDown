@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -41,7 +41,7 @@ public class User {
     private UserRole role;
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     public static User create(String email, String passwordHash, String name,
                               String phone, String affiliation) {
@@ -52,7 +52,7 @@ public class User {
         user.phone = phone;
         user.affiliation = affiliation;
         user.role = UserRole.USER;
-        user.createdAt = LocalDateTime.now();
+        user.createdAt = Instant.now();
         return user;
     }
 
