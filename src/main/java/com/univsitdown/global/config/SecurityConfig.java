@@ -23,6 +23,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/health",
+                                "/api/users/**",      // TODO: Phase 3에서 제거 — JWT @AuthenticationPrincipal로 교체
                                 "/swagger-ui/**",
                                 "/api-docs/**"
                         ).permitAll()
