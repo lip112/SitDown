@@ -14,7 +14,7 @@ public record UserResponse(
 ) {
     public static UserResponse from(User user) {
         return new UserResponse(
-                user.getId().toString(),
+                user.getId() != null ? user.getId().toString() : null,
                 user.getEmail(),
                 user.getName(),
                 user.getPhone(),
