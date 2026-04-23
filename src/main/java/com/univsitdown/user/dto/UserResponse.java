@@ -14,7 +14,7 @@ public record UserResponse(
 ) {
     public static UserResponse from(User user) {
         return new UserResponse(
-                user.getId() != null ? user.getId().toString() : null,
+                user.getId() != null ? user.getId().toString() : null, // null only in unpersisted entities (unit tests)
                 user.getEmail(),
                 user.getName(),
                 user.getPhone(),
