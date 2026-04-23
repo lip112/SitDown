@@ -7,7 +7,5 @@ CREATE TABLE users (
     affiliation       VARCHAR(100),
     profile_image_url VARCHAR(500),
     role              VARCHAR(20)  NOT NULL DEFAULT 'USER',
-    created_at        TIMESTAMP    NOT NULL DEFAULT NOW()
+    created_at        TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
-
-CREATE INDEX idx_users_email ON users (email);
