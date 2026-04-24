@@ -4,11 +4,14 @@ import com.univsitdown.global.response.PageResponse;
 import com.univsitdown.space.dto.SpaceDetailResponse;
 import com.univsitdown.space.dto.SpaceListItemResponse;
 import com.univsitdown.space.exception.SpaceNotFoundException;
+import com.univsitdown.global.config.SecurityConfig;
+import com.univsitdown.global.security.JwtProvider;
 import com.univsitdown.space.service.SpaceService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -21,6 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(SpaceController.class)
+@Import(SecurityConfig.class)
 class SpaceControllerTest {
 
     @Autowired
@@ -28,6 +32,9 @@ class SpaceControllerTest {
 
     @MockBean
     private SpaceService spaceService;
+
+    @MockBean
+    private JwtProvider jwtProvider;
 
     private static final SpaceListItemResponse SAMPLE_LIST_ITEM = new SpaceListItemResponse(
             UUID.randomUUID().toString(), "제1열람실", 3, "READING_ROOM",

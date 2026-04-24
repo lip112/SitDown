@@ -1,6 +1,8 @@
 package com.univsitdown.space.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.univsitdown.global.config.SecurityConfig;
+import com.univsitdown.global.security.JwtProvider;
 import com.univsitdown.space.domain.SpaceCategory;
 import com.univsitdown.space.dto.CreateSpaceRequest;
 import com.univsitdown.space.dto.SpaceDetailResponse;
@@ -9,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -18,11 +21,11 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AdminSpaceController.class)
+@Import(SecurityConfig.class)
 class AdminSpaceControllerTest {
 
     @Autowired
@@ -30,6 +33,9 @@ class AdminSpaceControllerTest {
 
     @MockBean
     private SpaceService spaceService;
+
+    @MockBean
+    private JwtProvider jwtProvider;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -40,9 +46,8 @@ class AdminSpaceControllerTest {
             4, List.of("와이파이"), List.of(), false
     );
 
-    // Phase 3 전: JWT 인증 미구현으로 @WithMockUser(USER)로 테스트. Phase 3 이후 ADMIN 역할 검증 추가 예정
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     void createSpace_201() throws Exception {
         given(spaceService.createSpace(any())).willReturn(SAMPLE_DETAIL);
 
@@ -53,7 +58,6 @@ class AdminSpaceControllerTest {
         );
 
         mockMvc.perform(post("/api/admin/spaces")
-                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -63,7 +67,7 @@ class AdminSpaceControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "ADMIN")
     void createSpace_name_누락_400() throws Exception {
         String requestJson = """
                 {
@@ -76,7 +80,6 @@ class AdminSpaceControllerTest {
                 """;
 
         mockMvc.perform(post("/api/admin/spaces")
-                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isBadRequest())
