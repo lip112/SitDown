@@ -26,7 +26,7 @@ public class SpaceController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         return ResponseEntity.ok(
-                spaceService.getSpaces(category, keyword, PageRequest.of(page, size)));
+                spaceService.getSpaces(category, keyword, PageRequest.of(page, Math.min(size, 100))));
     }
 
     @GetMapping("/{id}")
