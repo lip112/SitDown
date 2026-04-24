@@ -12,6 +12,9 @@ import java.util.UUID;
 
 public interface SpaceRepository extends JpaRepository<Space, UUID> {
 
+    // category, keyword 둘 다 null이면 전체 조회.
+    // LIKE :keyword — 와일드카드(%)는 호출부(SpaceService)에서 붙여서 전달.
+    //                 쿼리 내 %:keyword% 문법은 비표준이라 JPA 구현체에 따라 동작이 다를 수 있음.
     @Query("""
             SELECT s FROM Space s
             WHERE (:category IS NULL OR s.category = :category)
