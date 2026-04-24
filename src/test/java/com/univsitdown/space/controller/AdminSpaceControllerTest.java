@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalTime;
 import java.util.List;
-import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
@@ -36,11 +35,12 @@ class AdminSpaceControllerTest {
     private ObjectMapper objectMapper;
 
     private static final SpaceDetailResponse SAMPLE_DETAIL = new SpaceDetailResponse(
-            UUID.randomUUID().toString(), "제2열람실", 2, "READING_ROOM",
-            0, 0, 0, 0, "LOW", "06:00", "22:00",
+            "test-space-id", "제2열람실", 2, "READING_ROOM",
+            0, 0, 0, 0, "LOW", "06:00:00", "22:00:00",
             4, List.of("와이파이"), List.of(), false
     );
 
+    // Phase 3 전: JWT 인증 미구현으로 @WithMockUser(USER)로 테스트. Phase 3 이후 ADMIN 역할 검증 추가 예정
     @Test
     @WithMockUser
     void createSpace_201() throws Exception {
@@ -57,7 +57,9 @@ class AdminSpaceControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value("제2열람실"));
+                .andExpect(jsonPath("$.name").value("제2열람실"))
+                .andExpect(jsonPath("$.floor").value(2))
+                .andExpect(jsonPath("$.category").value("READING_ROOM"));
     }
 
     @Test
@@ -77,6 +79,7 @@ class AdminSpaceControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("COMMON-100"));
     }
 }
