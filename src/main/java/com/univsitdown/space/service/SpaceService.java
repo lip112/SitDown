@@ -22,8 +22,11 @@ public class SpaceService {
 
     private final SpaceRepository spaceRepository;
 
+    // 공간 목록 조회. category/keyword가 null이면 전체 조회.
+    // readOnly = true: 조회 전용 트랜잭션 — flush 생략으로 성능 최적화, 실수로 save 호출 방지.
     @Transactional(readOnly = true)
     public PageResponse<SpaceListItemResponse> getSpaces(SpaceCategory category, String keyword, Pageable pageable) {
+        // JPQL 표준 LIKE 문법 사용: 쿼리 내부가 아닌 호출부에서 % 와일드카드 적용
         String keywordPattern = keyword != null ? "%" + keyword + "%" : null;
         Page<SpaceListItemResponse> page = spaceRepository
                 .findByFilters(category, keywordPattern, pageable)
