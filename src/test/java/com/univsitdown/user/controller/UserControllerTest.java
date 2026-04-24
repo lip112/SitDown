@@ -17,6 +17,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -71,6 +72,7 @@ class UserControllerTest {
         given(userService.updateUser(eq(TEST_USER_ID), any())).willReturn(updated);
 
         mockMvc.perform(patch("/api/users/me")
+                        .with(csrf())
                         .header("X-User-Id", TEST_USER_ID.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -83,6 +85,7 @@ class UserControllerTest {
     @WithMockUser
     void updateMe_이름_1자_400() throws Exception {
         mockMvc.perform(patch("/api/users/me")
+                        .with(csrf())
                         .header("X-User-Id", TEST_USER_ID.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
@@ -94,6 +97,7 @@ class UserControllerTest {
     @WithMockUser
     void updateMe_잘못된_전화번호_형식_400() throws Exception {
         mockMvc.perform(patch("/api/users/me")
+                        .with(csrf())
                         .header("X-User-Id", TEST_USER_ID.toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(

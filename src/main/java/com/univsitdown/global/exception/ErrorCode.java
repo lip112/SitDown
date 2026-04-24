@@ -44,6 +44,7 @@ public enum ErrorCode {
     SEAT_ALREADY_EXISTS("ADMIN-002", HttpStatus.CONFLICT, "이미 좌석이 존재합니다."),
 
     // COMMON
+    VALIDATION_FAILED("COMMON-100", HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다."),
     INTERNAL_SERVER_ERROR("COMMON-001", HttpStatus.INTERNAL_SERVER_ERROR, "잠시 후 다시 시도해 주세요."),
     SERVICE_MAINTENANCE("COMMON-002", HttpStatus.SERVICE_UNAVAILABLE, "서비스 점검 중입니다.");
 
