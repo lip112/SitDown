@@ -3,11 +3,11 @@ package com.univsitdown.global.converter;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-@Converter
+@Converter(autoApply = false)
 public class StringListConverter implements AttributeConverter<List<String>, String[]> {
 
     @Override
@@ -18,7 +18,7 @@ public class StringListConverter implements AttributeConverter<List<String>, Str
 
     @Override
     public List<String> convertToEntityAttribute(String[] dbData) {
-        if (dbData == null || dbData.length == 0) return Collections.emptyList();
-        return Arrays.asList(dbData);
+        if (dbData == null || dbData.length == 0) return new ArrayList<>();
+        return new ArrayList<>(Arrays.asList(dbData));
     }
 }
