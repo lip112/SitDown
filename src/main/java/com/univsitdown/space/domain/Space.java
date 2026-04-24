@@ -57,7 +57,7 @@ public class Space {
         space.openTime = openTime;
         space.closeTime = closeTime;
         space.maxReservationHours = maxReservationHours;
-        space.features = features != null ? features : List.of();
+        space.features = features != null ? List.copyOf(features) : List.of();
         space.thumbnailUrl = thumbnailUrl;
         return space;
     }
