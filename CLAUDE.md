@@ -264,9 +264,41 @@ void 동시에_100명이_같은_좌석을_예약하면_1명만_성공한다() th
 
 > 이 섹션은 Phase 진행할 때마다 업데이트한다.
 
-**현재 Phase**: Phase 2 — 도메인 구현 (진행 예정)
-**다음 Phase**: Phase 3 — 인증 / 인가
-**완료된 Phase**: Phase 1 (기반 다지기)
+**현재 Phase**: Phase 3 완료 / Phase 4 준비 중
+**다음 Phase**: Phase 4 — 예약 핵심 로직 (동시성, 락, 트랜잭션)
+**완료된 Phase**: Phase 1 (기반 다지기), Phase 2 (도메인 구현), Phase 3 (인증/인가)
+
+### 구현 완료 API
+- ✅ AUTH-01 `POST /api/auth/signup` — 회원가입
+- ✅ AUTH-02 `POST /api/auth/email/send` — 이메일 인증 코드 발송
+- ✅ AUTH-03 `POST /api/auth/email/verify` — 이메일 인증 코드 확인
+- ✅ AUTH-04 `POST /api/auth/login` — 로그인 (JWT 발급)
+- ✅ AUTH-05 `POST /api/auth/refresh` — 토큰 갱신
+- ✅ AUTH-06 `POST /api/auth/logout` — 로그아웃
+- ✅ AUTH-07 `POST /api/auth/password/reset` — 비밀번호 재설정 메일 (로그 stub)
+- ✅ USER-01 `GET /api/users/me` — 내 정보 조회
+- ✅ USER-02 `PATCH /api/users/me` — 내 정보 수정
+- ✅ SPACE-01 `GET /api/spaces` — 공간 목록 조회
+- ✅ SPACE-02 `GET /api/spaces/{id}` — 공간 상세 조회
+- ✅ ADMIN-01 `POST /api/admin/spaces` — 공간 생성
+
+### 미구현 API
+- ❌ SPACE-03 `GET /api/spaces/{id}/congestion` — 혼잡도 예측 조회 (Phase 5)
+- ❌ SPACE-04 `POST /api/spaces/{id}/favorite` — 즐겨찾기 추가 (Phase 5)
+- ❌ SPACE-05 `DELETE /api/spaces/{id}/favorite` — 즐겨찾기 해제 (Phase 5)
+- ❌ SEAT-01 `GET /api/spaces/{id}/seats` — 좌석 배치 및 상태 조회 (Phase 4)
+- ❌ SEAT-02 `GET /api/seats/{id}` — 좌석 상세 조회 (Phase 4)
+- ❌ ADMIN-02 `POST /api/admin/spaces/{id}/seats/grid` — 좌석 행/열 일괄 생성 (Phase 4)
+- ❌ ADMIN-03 `PATCH /api/admin/seats/{id}` — 좌석 상태 변경 (Phase 4)
+- ❌ RSV-01 `POST /api/reservations` — 예약 생성 ★ (Phase 4 핵심)
+- ❌ RSV-02 `GET /api/reservations/me` — 내 예약 목록 조회 (Phase 4)
+- ❌ RSV-03 `GET /api/reservations/{id}` — 예약 상세 조회 (Phase 4)
+- ❌ RSV-04 `PATCH /api/reservations/{id}/extend` — 예약 연장 (Phase 4)
+- ❌ RSV-05 `DELETE /api/reservations/{id}` — 예약 취소 (Phase 4)
+- ❌ STAT-01 `GET /api/stats/me` — 내 이용 통계 조회 (Phase 6)
+- ❌ NOTI-01 `GET /api/notices` — 공지사항 목록 조회 (Phase 6)
+- ❌ NOTI-02 `GET /api/notices/{id}` — 공지사항 상세 조회 (Phase 6)
+- ❌ USER-03 `POST /api/users/me/profile-image` — 프로필 사진 업로드 (Phase 6)
 
 ---
 
