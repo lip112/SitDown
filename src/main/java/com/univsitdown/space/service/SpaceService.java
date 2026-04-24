@@ -24,8 +24,9 @@ public class SpaceService {
 
     @Transactional(readOnly = true)
     public PageResponse<SpaceListItemResponse> getSpaces(SpaceCategory category, String keyword, Pageable pageable) {
+        String keywordPattern = keyword != null ? "%" + keyword + "%" : null;
         Page<SpaceListItemResponse> page = spaceRepository
-                .findByFilters(category, keyword, pageable)
+                .findByFilters(category, keywordPattern, pageable)
                 .map(SpaceListItemResponse::from);
         return PageResponse.from(page);
     }

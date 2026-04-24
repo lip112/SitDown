@@ -15,7 +15,7 @@ public interface SpaceRepository extends JpaRepository<Space, UUID> {
     @Query("""
             SELECT s FROM Space s
             WHERE (:category IS NULL OR s.category = :category)
-              AND (:keyword IS NULL OR s.name LIKE %:keyword%)
+              AND (:keyword IS NULL OR s.name LIKE :keyword)
             """)
     Page<Space> findByFilters(@Param("category") SpaceCategory category,
                               @Param("keyword") String keyword,
