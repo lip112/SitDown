@@ -44,10 +44,10 @@ class AuthServiceTest {
     void 정상_회원가입() {
         given(authStore.isEmailVerified("test@univ.com")).willReturn(true);
         given(userRepository.existsByEmail("test@univ.com")).willReturn(false);
-        given(passwordEncoder.encode("REDACTED")).willReturn("hashed");
+        given(passwordEncoder.encode("Serv1ce$Test")).willReturn("hashed");
         given(userRepository.save(any(User.class))).willReturn(sampleUser);
 
-        SignupRequest request = new SignupRequest("test@univ.com", "REDACTED", "홍길동", null, null);
+        SignupRequest request = new SignupRequest("test@univ.com", "Serv1ce$Test", "홍길동", null, null);
         SignupResponse response = authService.signup(request);
 
         assertThat(response.email()).isEqualTo("test@univ.com");
@@ -59,7 +59,7 @@ class AuthServiceTest {
     void 이메일_미인증_회원가입_시_예외() {
         given(authStore.isEmailVerified("test@univ.com")).willReturn(false);
 
-        SignupRequest request = new SignupRequest("test@univ.com", "REDACTED", "홍길동", null, null);
+        SignupRequest request = new SignupRequest("test@univ.com", "Serv1ce$Test", "홍길동", null, null);
 
         assertThatThrownBy(() -> authService.signup(request))
                 .isInstanceOf(EmailNotVerifiedException.class);
@@ -70,7 +70,7 @@ class AuthServiceTest {
         given(authStore.isEmailVerified("test@univ.com")).willReturn(true);
         given(userRepository.existsByEmail("test@univ.com")).willReturn(true);
 
-        SignupRequest request = new SignupRequest("test@univ.com", "REDACTED", "홍길동", null, null);
+        SignupRequest request = new SignupRequest("test@univ.com", "Serv1ce$Test", "홍길동", null, null);
 
         assertThatThrownBy(() -> authService.signup(request))
                 .isInstanceOf(EmailDuplicatedException.class);
@@ -136,11 +136,11 @@ class AuthServiceTest {
     @Test
     void 정상_로그인() {
         given(userRepository.findByEmail("test@univ.com")).willReturn(Optional.of(sampleUser));
-        given(passwordEncoder.matches("REDACTED", "hashed")).willReturn(true);
+        given(passwordEncoder.matches("Serv1ce$Test", "hashed")).willReturn(true);
         given(jwtProvider.generateAccessToken(any(), eq(UserRole.USER))).willReturn("access-token");
         given(jwtProvider.getAccessTokenExpirySeconds()).willReturn(1800L);
 
-        LoginResponse response = authService.login("test@univ.com", "REDACTED");
+        LoginResponse response = authService.login("test@univ.com", "Serv1ce$Test");
 
         assertThat(response.accessToken()).isEqualTo("access-token");
         assertThat(response.refreshToken()).isNotBlank();
@@ -151,7 +151,7 @@ class AuthServiceTest {
     void 존재하지_않는_이메일_로그인_시_예외() {
         given(userRepository.findByEmail("none@univ.com")).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authService.login("none@univ.com", "REDACTED"))
+        assertThatThrownBy(() -> authService.login("none@univ.com", "Serv1ce$Test"))
                 .isInstanceOf(InvalidCredentialsException.class);
     }
 

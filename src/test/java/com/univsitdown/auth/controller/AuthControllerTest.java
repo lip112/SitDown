@@ -33,7 +33,7 @@ class AuthControllerTest {
     @Test
     void 회원가입_정상() throws Exception {
         SignupRequest request = new SignupRequest(
-                "test@univ.com", "REDACTED", "홍길동", null, null);
+                "test@univ.com", "Test#2026ctrl", "홍길동", null, null);
         SignupResponse response = new SignupResponse(
                 UUID.randomUUID(), "test@univ.com", "홍길동", "2026-04-24T00:00:00Z");
         given(authService.signup(any())).willReturn(response);
@@ -48,7 +48,7 @@ class AuthControllerTest {
     @Test
     void 회원가입_이메일_형식_오류_400() throws Exception {
         SignupRequest request = new SignupRequest(
-                "not-an-email", "REDACTED", "홍길동", null, null);
+                "not-an-email", "Test#2026ctrl", "홍길동", null, null);
 
         mockMvc.perform(post("/api/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -59,7 +59,7 @@ class AuthControllerTest {
     @Test
     void 회원가입_이메일_중복_409() throws Exception {
         SignupRequest request = new SignupRequest(
-                "test@univ.com", "REDACTED", "홍길동", null, null);
+                "test@univ.com", "Test#2026ctrl", "홍길동", null, null);
         given(authService.signup(any())).willThrow(new EmailDuplicatedException());
 
         mockMvc.perform(post("/api/auth/signup")
@@ -97,11 +97,11 @@ class AuthControllerTest {
 
     @Test
     void 로그인_정상() throws Exception {
-        LoginRequest request = new LoginRequest("test@univ.com", "REDACTED");
+        LoginRequest request = new LoginRequest("test@univ.com", "Test#2026ctrl");
         LoginResponse response = new LoginResponse(
                 "access-token", "refresh-token", 1800L,
                 new LoginResponse.LoginUserInfo(UUID.randomUUID(), "test@univ.com", "홍길동", "USER"));
-        given(authService.login("test@univ.com", "REDACTED")).willReturn(response);
+        given(authService.login("test@univ.com", "Test#2026ctrl")).willReturn(response);
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

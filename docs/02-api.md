@@ -206,7 +206,7 @@ POST /api/auth/signup
 ```json
 {
   "email": "student@univ.com",
-  "password": "REDACTED",
+  "password": "P@ssw0rd1!",
   "name": "김학생",
   "phone": "010-1234-5678",
   "affiliation": "학생"

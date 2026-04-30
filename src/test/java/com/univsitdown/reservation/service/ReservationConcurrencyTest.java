@@ -75,7 +75,7 @@ class ReservationConcurrencyTest {
         for (int i = 0; i < 10; i++) {
             User user = userRepository.save(User.create(
                     "concurrent_" + UUID.randomUUID() + "@test.com",
-                    passwordEncoder.encode("pass"),
+                    passwordEncoder.encode("Conc0rr3nt!"),
                     "테스터" + i, null, null));
             userIds.add(user.getId());
         }
