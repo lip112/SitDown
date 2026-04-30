@@ -14,6 +14,8 @@ import com.univsitdown.user.domain.User;
 import com.univsitdown.user.exception.UserNotFoundException;
 import com.univsitdown.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,11 @@ public class ReservationService {
     private final UserRepository userRepository;
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "space:list",   allEntries = true),
+            @CacheEvict(value = "space:detail", allEntries = true),
+            @CacheEvict(value = "seat:layout",  allEntries = true)
+    })
     public CreateReservationResponse reserve(UUID userId, CreateReservationRequest request) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         LocalDateTime startAt = request.startAt();
@@ -97,6 +104,11 @@ public class ReservationService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "space:list",   allEntries = true),
+            @CacheEvict(value = "space:detail", allEntries = true),
+            @CacheEvict(value = "seat:layout",  allEntries = true)
+    })
     public ExtendReservationResponse extend(UUID reservationId, UUID userId, int additionalMinutes) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(ReservationNotFoundException::new);
@@ -127,6 +139,11 @@ public class ReservationService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "space:list",   allEntries = true),
+            @CacheEvict(value = "space:detail", allEntries = true),
+            @CacheEvict(value = "seat:layout",  allEntries = true)
+    })
     public void cancel(UUID reservationId, UUID userId) {
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(ReservationNotFoundException::new);
