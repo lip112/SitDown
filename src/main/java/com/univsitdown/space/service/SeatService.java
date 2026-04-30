@@ -11,6 +11,9 @@ import com.univsitdown.space.exception.SpaceNotFoundException;
 import com.univsitdown.space.repository.SeatRepository;
 import com.univsitdown.space.repository.SpaceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +33,11 @@ public class SeatService {
     private final ReservationRepository reservationRepository;
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "space:list",   allEntries = true),
+            @CacheEvict(value = "space:detail", allEntries = true),
+            @CacheEvict(value = "seat:layout",  allEntries = true)
+    })
     public CreateSeatGridResponse createGrid(UUID spaceId, CreateSeatGridRequest request) {
         Space space = spaceRepository.findById(spaceId)
                 .orElseThrow(SpaceNotFoundException::new);
@@ -56,6 +64,11 @@ public class SeatService {
     }
 
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = "space:list",   allEntries = true),
+            @CacheEvict(value = "space:detail", allEntries = true),
+            @CacheEvict(value = "seat:layout",  allEntries = true)
+    })
     public void updateSeatStatus(UUID seatId, boolean isEnabled) {
         Seat seat = seatRepository.findById(seatId)
                 .orElseThrow(SeatNotFoundException::new);
@@ -63,6 +76,7 @@ public class SeatService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "seat:layout", key = "#spaceId")
     public SeatLayoutResponse getSeatLayout(UUID spaceId, LocalDateTime at) {
         spaceRepository.findById(spaceId).orElseThrow(SpaceNotFoundException::new);
 
