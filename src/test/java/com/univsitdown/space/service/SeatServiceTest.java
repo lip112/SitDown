@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.*;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class SeatServiceTest {
@@ -119,6 +120,7 @@ class SeatServiceTest {
         UUID spaceId = UUID.randomUUID();
         Space space = sampleSpace();
         Seat seat = Seat.create(space, 1, 1, "A-1");
+        ReflectionTestUtils.setField(seat, "id", UUID.randomUUID());
         given(spaceRepository.findById(spaceId)).willReturn(Optional.of(space));
         given(seatRepository.findBySpaceIdOrderByRowNumAscColNumAsc(spaceId)).willReturn(List.of(seat));
         given(reservationRepository.findOccupiedSeatIdsBySpaceId(any(), any())).willReturn(List.of());
