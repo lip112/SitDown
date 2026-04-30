@@ -264,9 +264,9 @@ void 동시에_100명이_같은_좌석을_예약하면_1명만_성공한다() th
 
 > 이 섹션은 Phase 진행할 때마다 업데이트한다.
 
-**현재 Phase**: Phase 4 완료 / Phase 5 준비 중
-**다음 Phase**: Phase 5 — Redis 캐싱 (혼잡도/좌석 상태 캐싱, 분산 락)
-**완료된 Phase**: Phase 1 (기반 다지기), Phase 2 (도메인 구현), Phase 3 (인증/인가), Phase 4 (예약 핵심 로직)
+**현재 Phase**: Phase 5 완료 / Phase 6 준비 중
+**다음 Phase**: Phase 6 — 운영 준비 (로깅/예외 처리/모니터링/Swagger)
+**완료된 Phase**: Phase 1 (기반 다지기), Phase 2 (도메인 구현), Phase 3 (인증/인가), Phase 4 (예약 핵심 로직), Phase 5 (Redis 캐싱)
 
 ### 구현 완료 API
 - ✅ AUTH-01 `POST /api/auth/signup` — 회원가입
