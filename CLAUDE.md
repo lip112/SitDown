@@ -264,9 +264,9 @@ void 동시에_100명이_같은_좌석을_예약하면_1명만_성공한다() th
 
 > 이 섹션은 Phase 진행할 때마다 업데이트한다.
 
-**현재 Phase**: Phase 3 완료 / Phase 4 준비 중
-**다음 Phase**: Phase 4 — 예약 핵심 로직 (동시성, 락, 트랜잭션)
-**완료된 Phase**: Phase 1 (기반 다지기), Phase 2 (도메인 구현), Phase 3 (인증/인가)
+**현재 Phase**: Phase 4 완료 / Phase 5 준비 중
+**다음 Phase**: Phase 5 — Redis 캐싱 (혼잡도/좌석 상태 캐싱, 분산 락)
+**완료된 Phase**: Phase 1 (기반 다지기), Phase 2 (도메인 구현), Phase 3 (인증/인가), Phase 4 (예약 핵심 로직)
 
 ### 구현 완료 API
 - ✅ AUTH-01 `POST /api/auth/signup` — 회원가입
@@ -281,20 +281,20 @@ void 동시에_100명이_같은_좌석을_예약하면_1명만_성공한다() th
 - ✅ SPACE-01 `GET /api/spaces` — 공간 목록 조회
 - ✅ SPACE-02 `GET /api/spaces/{id}` — 공간 상세 조회
 - ✅ ADMIN-01 `POST /api/admin/spaces` — 공간 생성
+- ✅ ADMIN-02 `POST /api/admin/spaces/{id}/seats/grid` — 좌석 행/열 일괄 생성
+- ✅ ADMIN-03 `PATCH /api/admin/seats/{id}` — 좌석 상태 변경
+- ✅ SEAT-01 `GET /api/spaces/{id}/seats` — 좌석 배치 및 상태 조회
+- ✅ SEAT-02 `GET /api/seats/{id}` — 좌석 상세 조회
+- ✅ RSV-01 `POST /api/reservations` — 예약 생성 (비관적 락 + EXCLUDE 제약)
+- ✅ RSV-02 `GET /api/reservations/me` — 내 예약 목록 조회
+- ✅ RSV-03 `GET /api/reservations/{id}` — 예약 상세 조회
+- ✅ RSV-04 `PATCH /api/reservations/{id}/extend` — 예약 연장
+- ✅ RSV-05 `DELETE /api/reservations/{id}` — 예약 취소
 
 ### 미구현 API
 - ❌ SPACE-03 `GET /api/spaces/{id}/congestion` — 혼잡도 예측 조회 (Phase 5)
 - ❌ SPACE-04 `POST /api/spaces/{id}/favorite` — 즐겨찾기 추가 (Phase 5)
 - ❌ SPACE-05 `DELETE /api/spaces/{id}/favorite` — 즐겨찾기 해제 (Phase 5)
-- ❌ SEAT-01 `GET /api/spaces/{id}/seats` — 좌석 배치 및 상태 조회 (Phase 4)
-- ❌ SEAT-02 `GET /api/seats/{id}` — 좌석 상세 조회 (Phase 4)
-- ❌ ADMIN-02 `POST /api/admin/spaces/{id}/seats/grid` — 좌석 행/열 일괄 생성 (Phase 4)
-- ❌ ADMIN-03 `PATCH /api/admin/seats/{id}` — 좌석 상태 변경 (Phase 4)
-- ❌ RSV-01 `POST /api/reservations` — 예약 생성 ★ (Phase 4 핵심)
-- ❌ RSV-02 `GET /api/reservations/me` — 내 예약 목록 조회 (Phase 4)
-- ❌ RSV-03 `GET /api/reservations/{id}` — 예약 상세 조회 (Phase 4)
-- ❌ RSV-04 `PATCH /api/reservations/{id}/extend` — 예약 연장 (Phase 4)
-- ❌ RSV-05 `DELETE /api/reservations/{id}` — 예약 취소 (Phase 4)
 - ❌ STAT-01 `GET /api/stats/me` — 내 이용 통계 조회 (Phase 6)
 - ❌ NOTI-01 `GET /api/notices` — 공지사항 목록 조회 (Phase 6)
 - ❌ NOTI-02 `GET /api/notices/{id}` — 공지사항 상세 조회 (Phase 6)
