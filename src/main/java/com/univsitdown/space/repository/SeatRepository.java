@@ -19,6 +19,8 @@ public interface SeatRepository extends JpaRepository<Seat, UUID> {
 
     void deleteBySpaceId(UUID spaceId);
 
+    long countBySpaceIdAndIsEnabledTrue(UUID spaceId);
+
     // 예약 생성 시 row-level 비관적 락 획득 — 동시 요청이 순차 처리되도록 강제
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Seat s WHERE s.id = :id")

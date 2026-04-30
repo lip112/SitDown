@@ -87,6 +87,16 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
                                        @Param("now") LocalDateTime now,
                                        Pageable pageable);
 
+    // Phase 5: 공간의 현재 점유 좌석 수 (CANCELED/NO_SHOW 제외, 현재 시각 기준)
+    @Query("""
+            SELECT COUNT(DISTINCT r.seat.id)
+            FROM Reservation r
+            WHERE r.seat.space.id = :spaceId
+              AND r.status NOT IN ('CANCELED', 'NO_SHOW')
+              AND r.startAt <= :now AND r.endAt > :now
+            """)
+    long countOccupiedBySpaceId(@Param("spaceId") UUID spaceId, @Param("now") LocalDateTime now);
+
     // RSV-02 CANCELED
     @Query(value = """
             SELECT r FROM Reservation r JOIN FETCH r.seat s JOIN FETCH s.space
