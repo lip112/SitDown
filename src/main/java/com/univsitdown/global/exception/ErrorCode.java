@@ -28,6 +28,7 @@ public enum ErrorCode {
     SEAT_UNAVAILABLE("SEAT-002", HttpStatus.CONFLICT, "현재 이용할 수 없는 좌석입니다."),
 
     // RESERVATION
+    RESERVATION_NOT_FOUND("RSV-031", HttpStatus.NOT_FOUND, "예약을 찾을 수 없습니다."),
     RESERVATION_OUT_OF_HOURS("RSV-001", HttpStatus.BAD_REQUEST, "운영 시간 외에는 예약할 수 없습니다."),
     RESERVATION_MAX_DURATION_EXCEEDED("RSV-002", HttpStatus.BAD_REQUEST, "최대 이용 시간은 4시간입니다."),
     RESERVATION_INVALID_TIME("RSV-003", HttpStatus.BAD_REQUEST, "시작 시간이 종료 시간보다 빨라야 합니다."),
@@ -44,6 +45,7 @@ public enum ErrorCode {
     SEAT_ALREADY_EXISTS("ADMIN-002", HttpStatus.CONFLICT, "이미 좌석이 존재합니다."),
 
     // COMMON
+    VALIDATION_FAILED("COMMON-100", HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다."),
     INTERNAL_SERVER_ERROR("COMMON-001", HttpStatus.INTERNAL_SERVER_ERROR, "잠시 후 다시 시도해 주세요."),
     SERVICE_MAINTENANCE("COMMON-002", HttpStatus.SERVICE_UNAVAILABLE, "서비스 점검 중입니다.");
 

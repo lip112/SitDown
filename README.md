@@ -1,6 +1,6 @@
 # UNIV SITDOWN Backend
 
-대학교 좌석 예약 시스템 백엔드. Java 17 + Spring Boot 3.2 기반.
+대학교 좌석 예약 시스템 백엔드. Java 17 + Spring Boot 3.5 기반.
 
 ## 🚀 Claude Code와 함께 시작하기
 
