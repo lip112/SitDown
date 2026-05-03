@@ -1,11 +1,11 @@
 package com.univsitdown.space.domain;
 
-import com.univsitdown.global.converter.StringListConverter;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,9 +35,13 @@ public class Seat {
     @Column(nullable = false)
     private boolean isEnabled;
 
-    @Convert(converter = StringListConverter.class)
+    @Getter(AccessLevel.NONE)
     @Column(columnDefinition = "text[]", nullable = false)
-    private List<String> features;
+    private String[] features;
+
+    public List<String> getFeatures() {
+        return (features == null || features.length == 0) ? List.of() : Arrays.asList(features);
+    }
 
     public static Seat create(Space space, int rowNum, int colNum, String label) {
         Seat seat = new Seat();
@@ -46,7 +50,7 @@ public class Seat {
         seat.colNum = colNum;
         seat.label = label;
         seat.isEnabled = true;
-        seat.features = List.of();
+        seat.features = new String[0];
         return seat;
     }
 

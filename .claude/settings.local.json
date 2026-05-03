@@ -40,7 +40,14 @@
       "Bash(git *)",
       "PowerShell(Get-Command *)",
       "PowerShell(Test-Path *)",
-      "Skill(update-config)"
+      "Skill(update-config)",
+      "Bash(pg_isready -h localhost -p 5432)",
+      "Bash(psql -h localhost -p 5432 -U sitdown -d sitdown -c \"\\\\dt\")",
+      "Bash(docker-compose -f /Users/aaaa/IdeaProjects/SitDown/docker-compose.yml ps)",
+      "Bash(xargs cat *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/swagger-ui.html)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/swagger-ui/index.html)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/swagger-ui/)"
     ]
   }
 }
