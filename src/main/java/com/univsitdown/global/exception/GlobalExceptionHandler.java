@@ -37,6 +37,7 @@ public class GlobalExceptionHandler {
         String message = e.getBindingResult().getFieldErrors().stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
+        log.warn("[ValidationException] path={}, message={}", request.getRequestURI(), message);
         return ResponseEntity.badRequest().body(new ErrorResponse(
                 ErrorCode.VALIDATION_FAILED.getCode(),
                 message,
