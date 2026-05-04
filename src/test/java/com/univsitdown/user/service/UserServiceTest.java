@@ -1,5 +1,6 @@
 package com.univsitdown.user.service;
 
+import com.univsitdown.user.domain.Affiliation;
 import com.univsitdown.user.domain.User;
 import com.univsitdown.user.dto.UpdateUserRequest;
 import com.univsitdown.user.dto.UserResponse;
@@ -29,7 +30,7 @@ class UserServiceTest {
     @Test
     void getUser_존재하는_사용자_조회_성공() {
         UUID userId = UUID.randomUUID();
-        User user = User.create("test@univ.com", "hash", "김학생", "010-1234-5678", "학생");
+        User user = User.create("test@univ.com", "hash", "김학생", "010-1234-5678", Affiliation.UNDERGRADUATE);
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
         UserResponse response = userService.getUser(userId);
@@ -50,14 +51,14 @@ class UserServiceTest {
     @Test
     void updateUser_이름_변경_성공() {
         UUID userId = UUID.randomUUID();
-        User user = User.create("test@univ.com", "hash", "김학생", null, "학생");
+        User user = User.create("test@univ.com", "hash", "김학생", null, Affiliation.UNDERGRADUATE);
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
         UserResponse response = userService.updateUser(userId, new UpdateUserRequest("이름변경", null, null));
 
         assertThat(response.name()).isEqualTo("이름변경");
         assertThat(response.email()).isEqualTo("test@univ.com");    // unchanged
-        assertThat(response.affiliation()).isEqualTo("학생");         // unchanged
+        assertThat(response.affiliation()).isEqualTo("UNDERGRADUATE"); // unchanged
     }
 
     @Test

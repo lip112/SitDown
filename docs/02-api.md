@@ -138,6 +138,16 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | `NORMAL` | 보통 | 40% ~ 75% |
 | `HIGH` | 혼잡 | > 75% |
 
+### 3.5 Affiliation (소속)
+
+| value | 표시명 |
+|---|---|
+| `UNDERGRADUATE` | 학부생 |
+| `GRADUATE` | 대학원생 |
+| `FACULTY` | 교직원 |
+| `ASSISTANT` | 조교 |
+| `EXTERNAL` | 외부인 |
+
 ---
 
 ## 4. 전체 API 목록
@@ -200,7 +210,7 @@ POST /api/auth/signup
 | `password` | string | O | 비밀번호 (8자 이상, 영문/숫자/특수문자 포함) |
 | `name` | string | O | 이름 (2자 이상 20자 이하) |
 | `phone` | string | X | 전화번호 (010-1234-5678 형식) |
-| `affiliation` | string | X | 소속 (예: 학생, 대학원생) |
+| `affiliation` | enum | X | 소속 (`Affiliation` 참고) |
 
 **요청 예시**
 ```json
@@ -209,7 +219,7 @@ POST /api/auth/signup
   "password": "P@ssw0rd1!",
   "name": "김학생",
   "phone": "010-1234-5678",
-  "affiliation": "학생"
+  "affiliation": "UNDERGRADUATE"
 }
 ```
 
@@ -418,7 +428,7 @@ GET /api/users/me
   "email": "student@univ.com",
   "name": "김학생",
   "phone": "010-1234-5678",
-  "affiliation": "학생",
+  "affiliation": "UNDERGRADUATE",
   "profileImageUrl": "https://cdn.univ-sitdown.com/profile/a3f9.jpg",
   "role": "USER",
   "createdAt": "2025-03-01T00:00:00Z"
@@ -444,7 +454,7 @@ PATCH /api/users/me
 |---|---|---|---|
 | `name` | string | X | 변경할 이름 |
 | `phone` | string | X | 변경할 전화번호 |
-| `affiliation` | string | X | 변경할 소속 |
+| `affiliation` | enum | X | 변경할 소속 (`Affiliation` 참고) |
 
 **Response (200 OK)**: 갱신된 사용자 정보 (USER-01과 동일 포맷)
 
@@ -1095,3 +1105,4 @@ WHERE (status IN ('SCHEDULED','IN_USE','EXTENDED'));
 | 버전 | 일자 | 작성자 | 변경 내용 |
 |---|---|---|---|
 | 1.0 | 2026.04.22 | - | 최초 작성 (UNIV SITDOWN API 초안) |
+| 1.1 | 2026.05.04 | - | `affiliation` 필드를 자유 문자열 → `Affiliation` Enum으로 변경 (3.5절 추가) |

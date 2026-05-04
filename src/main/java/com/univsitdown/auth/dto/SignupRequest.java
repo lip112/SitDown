@@ -1,5 +1,6 @@
 package com.univsitdown.auth.dto;
 
+import com.univsitdown.user.domain.Affiliation;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -13,5 +14,5 @@ public record SignupRequest(
         ) String password,
         @NotBlank @Size(min = 2, max = 20) String name,
         @Pattern(regexp = "^010-\\d{4}-\\d{4}$", message = "전화번호 형식이 올바르지 않습니다.") String phone,
-        @Size(max = 50) String affiliation
+        Affiliation affiliation
 ) {}

@@ -2,7 +2,7 @@
 -- (space_id, row_num, col_num) 유니크 제약으로 중복 좌석 생성 방지
 CREATE TABLE seats (
     id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-    space_id   UUID        NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
+    space_id   UUID        NOT NULL,
     row_num    INT         NOT NULL,
     col_num    INT         NOT NULL,
     label      VARCHAR(20) NOT NULL,

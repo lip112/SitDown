@@ -6,8 +6,8 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 -- 취소/노쇼 예약은 겹침 제약에서 제외
 CREATE TABLE reservations (
     id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id        UUID        NOT NULL REFERENCES users(id),
-    seat_id        UUID        NOT NULL REFERENCES seats(id),
+    user_id        UUID        NOT NULL,
+    seat_id        UUID        NOT NULL,
     start_at       TIMESTAMP   NOT NULL,
     end_at         TIMESTAMP   NOT NULL,
     status         VARCHAR(20) NOT NULL DEFAULT 'SCHEDULED',

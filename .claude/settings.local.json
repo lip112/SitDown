@@ -47,7 +47,8 @@
       "Bash(xargs cat *)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/swagger-ui.html)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/swagger-ui/index.html)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/swagger-ui/)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/swagger-ui/)",
+      "Bash(./gradlew compileJava *)"
     ]
   }
 }

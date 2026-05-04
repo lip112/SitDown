@@ -5,6 +5,7 @@ import com.univsitdown.auth.exception.*;
 import com.univsitdown.global.security.AuthStore;
 import com.univsitdown.global.security.JwtProvider;
 import com.univsitdown.global.security.MailService;
+import com.univsitdown.user.domain.Affiliation;
 import com.univsitdown.user.domain.User;
 import com.univsitdown.user.domain.UserRole;
 import com.univsitdown.user.repository.UserRepository;
@@ -37,7 +38,7 @@ class AuthServiceTest {
 
     @BeforeEach
     void setUp() {
-        sampleUser = User.create("test@univ.com", "hashed", "홍길동", "010-1234-5678", "학생");
+        sampleUser = User.create("test@univ.com", "hashed", "홍길동", "010-1234-5678", Affiliation.UNDERGRADUATE);
     }
 
     @Test

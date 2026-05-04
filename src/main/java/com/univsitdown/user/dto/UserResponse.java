@@ -18,7 +18,7 @@ public record UserResponse(
                 user.getEmail(),
                 user.getName(),
                 user.getPhone(),
-                user.getAffiliation(),
+                user.getAffiliation() != null ? user.getAffiliation().name() : null,
                 user.getProfileImageUrl(),
                 user.getRole().name(),
                 user.getCreatedAt().toString()
