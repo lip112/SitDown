@@ -21,3 +21,20 @@ springdoc:
 jwt:
   secret: ${JWT_SECRET:univ-sitdown-local-development-secret-key-min-32-chars-long}
   access-token-expiry-seconds: 1800
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: univ-sitdown
+    version: 0.0.1
