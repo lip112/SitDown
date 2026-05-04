@@ -264,9 +264,9 @@ void 동시에_100명이_같은_좌석을_예약하면_1명만_성공한다() th
 
 > 이 섹션은 Phase 진행할 때마다 업데이트한다.
 
-**현재 Phase**: Phase 5 완료 / Phase 6 준비 중
-**다음 Phase**: Phase 6 — 운영 준비 (로깅/예외 처리/모니터링/Swagger)
-**완료된 Phase**: Phase 1 (기반 다지기), Phase 2 (도메인 구현), Phase 3 (인증/인가), Phase 4 (예약 핵심 로직), Phase 5 (Redis 캐싱)
+**현재 Phase**: Phase 6 완료 / Phase 7 준비 중
+**다음 Phase**: Phase 7 — AWS 배포 (ECS Fargate, RDS, ElastiCache, GitHub Actions CI/CD)
+**완료된 Phase**: Phase 1 (기반 다지기), Phase 2 (도메인 구현), Phase 3 (인증/인가), Phase 4 (예약 핵심 로직), Phase 5 (Redis 캐싱), Phase 6 (운영 준비)
 
 ### 구현 완료 API
 - ✅ AUTH-01 `POST /api/auth/signup` — 회원가입
@@ -295,10 +295,10 @@ void 동시에_100명이_같은_좌석을_예약하면_1명만_성공한다() th
 - ❌ SPACE-03 `GET /api/spaces/{id}/congestion` — 혼잡도 예측 조회 (Phase 5)
 - ❌ SPACE-04 `POST /api/spaces/{id}/favorite` — 즐겨찾기 추가 (Phase 5)
 - ❌ SPACE-05 `DELETE /api/spaces/{id}/favorite` — 즐겨찾기 해제 (Phase 5)
-- ❌ STAT-01 `GET /api/stats/me` — 내 이용 통계 조회 (Phase 6)
-- ❌ NOTI-01 `GET /api/notices` — 공지사항 목록 조회 (Phase 6)
-- ❌ NOTI-02 `GET /api/notices/{id}` — 공지사항 상세 조회 (Phase 6)
-- ❌ USER-03 `POST /api/users/me/profile-image` — 프로필 사진 업로드 (Phase 6)
+- ❌ STAT-01 `GET /api/stats/me` — 내 이용 통계 조회 (Phase 7)
+- ❌ NOTI-01 `GET /api/notices` — 공지사항 목록 조회 (Phase 7)
+- ❌ NOTI-02 `GET /api/notices/{id}` — 공지사항 상세 조회 (Phase 7)
+- ❌ USER-03 `POST /api/users/me/profile-image` — 프로필 사진 업로드 (Phase 7)
 
 ---
 
