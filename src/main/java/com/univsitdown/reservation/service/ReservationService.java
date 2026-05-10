@@ -42,7 +42,7 @@ public class ReservationService {
             @CacheEvict(value = "seat:layout",  allEntries = true)
     })
     public CreateReservationResponse reserve(UUID userId, CreateReservationRequest request) {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         LocalDateTime startAt = request.startAt();
         LocalDateTime endAt = request.endAt();
 
@@ -81,7 +81,7 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public PageResponse<ReservationListItemResponse> getMyReservations(
             UUID userId, String statusFilter, Pageable pageable) {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         Page<Reservation> page = switch (statusFilter != null ? statusFilter : "ACTIVE") {
             case "PAST" -> reservationRepository.findPastByUserId(
                     userId, ReservationStatus.SCHEDULED, now, pageable);
@@ -100,7 +100,7 @@ public class ReservationService {
         if (!reservation.getUser().getId().equals(userId)) {
             throw new ReservationNotOwnerException();
         }
-        return ReservationDetailResponse.from(reservation, LocalDateTime.now(ZoneOffset.UTC));
+        return ReservationDetailResponse.from(reservation, LocalDateTime.now(ZoneOffset.ofHours(9)));
     }
 
     @Transactional
@@ -117,7 +117,7 @@ public class ReservationService {
             throw new ReservationNotOwnerException();
         }
 
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         if (reservation.computedStatus(now) != ReservationStatus.IN_USE) {
             throw new ReservationNotExtendableException();
         }
@@ -152,7 +152,7 @@ public class ReservationService {
             throw new ReservationNotOwnerException();
         }
 
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         if (reservation.computedStatus(now) == ReservationStatus.COMPLETED) {
             throw new ReservationAlreadyEndedException();
         }

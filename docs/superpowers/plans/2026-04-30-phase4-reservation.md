@@ -1292,7 +1292,7 @@ public class SeatController {
             @RequestParam(required = false) String at) {
         LocalDateTime atTime = at != null
                 ? OffsetDateTime.parse(at).toLocalDateTime()
-                : LocalDateTime.now(ZoneOffset.UTC);
+                : LocalDateTime.now(ZoneOffset.ofHours(9));
         return seatService.getSeatLayout(id, atTime);
     }
 
@@ -1302,7 +1302,7 @@ public class SeatController {
             @RequestParam(required = false) String at) {
         LocalDateTime atTime = at != null
                 ? OffsetDateTime.parse(at).toLocalDateTime()
-                : LocalDateTime.now(ZoneOffset.UTC);
+                : LocalDateTime.now(ZoneOffset.ofHours(9));
         return seatService.getSeatDetail(id, atTime);
     }
 }
@@ -1572,7 +1572,7 @@ public class ReservationService {
 
     @Transactional
     public CreateReservationResponse reserve(UUID userId, CreateReservationRequest request) {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         LocalDateTime startAt = request.startAt();
         LocalDateTime endAt = request.endAt();
 
@@ -2156,7 +2156,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public PageResponse<ReservationListItemResponse> getMyReservations(
         UUID userId, String statusFilter, Pageable pageable) {
-    LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+    LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
     Page<Reservation> page = switch (statusFilter != null ? statusFilter : "ACTIVE") {
         case "PAST" -> reservationRepository.findPastByUserId(
                 userId, ReservationStatus.SCHEDULED, now, pageable);
@@ -2175,7 +2175,7 @@ public ReservationDetailResponse getReservation(UUID reservationId, UUID userId)
     if (!reservation.getUser().getId().equals(userId)) {
         throw new ReservationNotOwnerException();
     }
-    return ReservationDetailResponse.from(reservation, LocalDateTime.now(ZoneOffset.UTC));
+    return ReservationDetailResponse.from(reservation, LocalDateTime.now(ZoneOffset.ofHours(9)));
 }
 ```
 
@@ -2331,7 +2331,7 @@ public ExtendReservationResponse extend(UUID reservationId, UUID userId, int add
         throw new ReservationNotOwnerException();
     }
 
-    LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+    LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
     ReservationStatus computed = reservation.computedStatus(now);
 
     // IN_USE 상태만 연장 가능
@@ -2462,7 +2462,7 @@ public void cancel(UUID reservationId, UUID userId) {
         throw new ReservationNotOwnerException();
     }
 
-    LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+    LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
     ReservationStatus computed = reservation.computedStatus(now);
 
     if (computed == ReservationStatus.COMPLETED) {

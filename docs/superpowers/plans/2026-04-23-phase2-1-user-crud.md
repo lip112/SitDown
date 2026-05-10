@@ -258,7 +258,7 @@ public record UserResponse(
                 user.getAffiliation(),
                 user.getProfileImageUrl(),
                 user.getRole().name(),
-                user.getCreatedAt().toInstant(ZoneOffset.UTC).toString()
+                user.getCreatedAt().toInstant(ZoneOffset.ofHours(9)).toString()
         );
     }
 }
