@@ -1,8 +1,7 @@
 package com.univsitdown.global.response;
 
 import com.univsitdown.global.exception.ErrorCode;
-
-import java.time.Instant;
+import com.univsitdown.global.util.DateTimeUtils;
 
 public record ErrorResponse(
         String code,
@@ -15,7 +14,7 @@ public record ErrorResponse(
         return new ErrorResponse(
                 errorCode.getCode(),
                 errorCode.getMessage(),
-                Instant.now().toString(),
+                DateTimeUtils.nowKst(),
                 traceId,
                 path
         );

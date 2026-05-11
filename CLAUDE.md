@@ -134,7 +134,7 @@ throw new IllegalStateException("...");  // 비즈니스 로직에서 금지
 {
   "code": "RSV-004",
   "message": "이미 해당 시간대에 예약된 좌석입니다.",
-  "timestamp": "2026-04-22T09:00:00Z",
+  "timestamp": "2026-04-22T18:00:00+09:00",
   "traceId": "abc-123",
   "path": "/api/reservations"
 }

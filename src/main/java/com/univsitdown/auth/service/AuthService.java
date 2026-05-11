@@ -12,7 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import com.univsitdown.global.util.DateTimeUtils;
 import java.util.Random;
 import java.util.UUID;
 
@@ -57,7 +57,7 @@ public class AuthService {
         authStore.saveEmailCode(email, code);
         authStore.markEmailSent(email);
         mailService.sendVerificationCode(email, code);
-        return new EmailSendResponse(email, Instant.now().plusSeconds(180).toString());
+        return new EmailSendResponse(email, DateTimeUtils.nowPlusSecondsKst(180));
     }
 
     public EmailVerifyResponse verifyEmailCode(String email, String code) {

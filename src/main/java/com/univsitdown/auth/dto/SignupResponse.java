@@ -1,5 +1,6 @@
 package com.univsitdown.auth.dto;
 
+import com.univsitdown.global.util.DateTimeUtils;
 import com.univsitdown.user.domain.User;
 import java.util.UUID;
 
@@ -9,7 +10,7 @@ public record SignupResponse(UUID userId, String email, String name, String crea
                 user.getId(),
                 user.getEmail(),
                 user.getName(),
-                user.getCreatedAt().toString()
+                DateTimeUtils.toKst(user.getCreatedAt())
         );
     }
 }

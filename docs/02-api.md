@@ -35,8 +35,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 #### 날짜/시간 포맷
-- 모든 날짜·시간은 ISO 8601 UTC 형식 (예: `2026-04-22T09:00:00Z`)
-- 클라이언트에서 KST(Asia/Seoul, UTC+9)로 변환하여 표시
+- 모든 날짜·시간은 ISO 8601 KST 형식 (예: `2026-04-22T18:00:00+09:00`)
+- 서버가 KST(`+09:00`) 오프셋을 포함하여 반환하므로 클라이언트 별도 변환 불필요
 
 #### 페이지네이션
 - 목록 조회 API는 `page`(0-based), `size`(기본 20, 최대 100) 쿼리 파라미터 지원
@@ -76,7 +76,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 {
   "code": "SEAT-002",
   "message": "이미 예약된 좌석입니다.",
-  "timestamp": "2026-04-22T09:00:00Z",
+  "timestamp": "2026-04-22T18:00:00+09:00",
   "traceId": "abc-123-def-456",
   "path": "/api/reservations"
 }
@@ -229,7 +229,7 @@ POST /api/auth/signup
   "userId": "a3f9b2c1-...",
   "email": "student@univ.com",
   "name": "김학생",
-  "createdAt": "2026-04-22T09:00:00Z"
+  "createdAt": "2026-04-22T18:00:00+09:00"
 }
 ```
 
@@ -677,7 +677,7 @@ POST /api/reservations
 ```json
 {
   "seatId": "seat-a-12",
-  "startAt": "2026-04-22T09:00:00Z",
+  "startAt": "2026-04-22T18:00:00+09:00",
   "endAt": "2026-04-22T13:00:00Z"
 }
 ```
@@ -690,7 +690,7 @@ POST /api/reservations
   "seatLabel": "A-12",
   "spaceId": "space-001",
   "spaceName": "제1열람실",
-  "startAt": "2026-04-22T09:00:00Z",
+  "startAt": "2026-04-22T18:00:00+09:00",
   "endAt": "2026-04-22T13:00:00Z",
   "durationHours": 4,
   "status": "SCHEDULED",
@@ -747,7 +747,7 @@ GET /api/reservations/me
       "seatLabel": "A-12",
       "spaceName": "제1열람실",
       "spaceFloor": 3,
-      "startAt": "2026-04-22T09:00:00Z",
+      "startAt": "2026-04-22T18:00:00+09:00",
       "endAt": "2026-04-22T13:00:00Z",
       "status": "IN_USE",
       "remainingSeconds": 8130

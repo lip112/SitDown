@@ -1,5 +1,6 @@
 package com.univsitdown.reservation.dto;
 
+import com.univsitdown.global.util.DateTimeUtils;
 import com.univsitdown.reservation.domain.Reservation;
 import com.univsitdown.reservation.domain.ReservationStatus;
 
@@ -25,11 +26,11 @@ public record CreateReservationResponse(
                 r.getSeat().getLabel(),
                 r.getSeat().getSpace().getId().toString(),
                 r.getSeat().getSpace().getName(),
-                r.getStartAt() + "Z",
-                r.getEndAt() + "Z",
+                DateTimeUtils.toKst(r.getStartAt()),
+                DateTimeUtils.toKst(r.getEndAt()),
                 (int) (minutes / 60),
                 ReservationStatus.SCHEDULED.name(),
-                r.getCreatedAt() + "Z"
+                DateTimeUtils.toKst(r.getCreatedAt())
         );
     }
 }

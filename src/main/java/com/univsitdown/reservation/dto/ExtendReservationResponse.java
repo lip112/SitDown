@@ -1,5 +1,6 @@
 package com.univsitdown.reservation.dto;
 
+import com.univsitdown.global.util.DateTimeUtils;
 import com.univsitdown.reservation.domain.Reservation;
 
 public record ExtendReservationResponse(
@@ -10,7 +11,7 @@ public record ExtendReservationResponse(
     public static ExtendReservationResponse from(Reservation r) {
         return new ExtendReservationResponse(
                 r.getId().toString(),
-                r.getEndAt() + "Z",
+                DateTimeUtils.toKst(r.getEndAt()),
                 r.getExtendedCount()
         );
     }

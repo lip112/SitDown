@@ -1,5 +1,6 @@
 package com.univsitdown.user.dto;
 
+import com.univsitdown.global.util.DateTimeUtils;
 import com.univsitdown.user.domain.User;
 
 public record UserResponse(
@@ -21,7 +22,7 @@ public record UserResponse(
                 user.getAffiliation() != null ? user.getAffiliation().name() : null,
                 user.getProfileImageUrl(),
                 user.getRole().name(),
-                user.getCreatedAt().toString()
+                DateTimeUtils.toKst(user.getCreatedAt())
         );
     }
 }
