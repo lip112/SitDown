@@ -53,14 +53,14 @@ class CacheIntegrationTest {
     }
 
     @Test
-    void getSpace_두번_호출시_DB는_한번만_조회() {
+    void getSpace_두번_호출시_DB_두번_조회() {
         Space space = saveSpace();
         UUID spaceId = space.getId();
 
-        spaceService.getSpace(spaceId); // cache miss — DB 조회
-        spaceService.getSpace(spaceId); // cache hit  — DB 미조회
+        spaceService.getSpace(spaceId, null);
+        spaceService.getSpace(spaceId, null);
 
-        verify(spaceRepository, times(1)).findById(spaceId);
+        verify(spaceRepository, times(2)).findById(spaceId);
     }
 
     @Test
@@ -68,8 +68,8 @@ class CacheIntegrationTest {
         Space space = saveSpace();
         UUID spaceId = space.getId();
 
-        SpaceDetailResponse first  = spaceService.getSpace(spaceId);
-        SpaceDetailResponse second = spaceService.getSpace(spaceId);
+        SpaceDetailResponse first  = spaceService.getSpace(spaceId, null);
+        SpaceDetailResponse second = spaceService.getSpace(spaceId, null);
 
         assertThat(first.id()).isEqualTo(spaceId.toString());
         assertThat(second.id()).isEqualTo(spaceId.toString());

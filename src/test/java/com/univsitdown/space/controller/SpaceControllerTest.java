@@ -6,6 +6,7 @@ import com.univsitdown.space.dto.SpaceListItemResponse;
 import com.univsitdown.space.exception.SpaceNotFoundException;
 import com.univsitdown.global.config.SecurityConfig;
 import com.univsitdown.global.security.JwtProvider;
+import com.univsitdown.space.service.FavoriteService;
 import com.univsitdown.space.service.SpaceService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -32,6 +34,9 @@ class SpaceControllerTest {
 
     @MockBean
     private SpaceService spaceService;
+
+    @MockBean
+    private FavoriteService favoriteService;
 
     @MockBean
     private JwtProvider jwtProvider;
@@ -65,7 +70,7 @@ class SpaceControllerTest {
     @WithMockUser
     void getSpace_200() throws Exception {
         UUID id = UUID.randomUUID();
-        given(spaceService.getSpace(id)).willReturn(SAMPLE_DETAIL);
+        given(spaceService.getSpace(eq(id), any())).willReturn(SAMPLE_DETAIL);
 
         mockMvc.perform(get("/api/spaces/{id}", id))
                 .andExpect(status().isOk())
@@ -77,7 +82,7 @@ class SpaceControllerTest {
     @WithMockUser
     void getSpace_없는ID_404() throws Exception {
         UUID id = UUID.randomUUID();
-        given(spaceService.getSpace(id)).willThrow(new SpaceNotFoundException());
+        given(spaceService.getSpace(eq(id), any())).willThrow(new SpaceNotFoundException());
 
         mockMvc.perform(get("/api/spaces/{id}", id))
                 .andExpect(status().isNotFound())

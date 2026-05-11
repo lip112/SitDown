@@ -62,4 +62,8 @@ public class User {
         if (phone != null) this.phone = phone;
         if (affiliation != null) this.affiliation = affiliation;
     }
+
+    public void updateProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
 }

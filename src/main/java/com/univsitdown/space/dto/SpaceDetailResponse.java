@@ -25,7 +25,7 @@ public record SpaceDetailResponse(
         return from(space, 0, 0);
     }
 
-    public static SpaceDetailResponse from(Space space, int totalSeats, int availableSeats) {
+    public static SpaceDetailResponse from(Space space, int totalSeats, int availableSeats, boolean isFavorite) {
         return new SpaceDetailResponse(
                 space.getId() != null ? space.getId().toString() : null,
                 space.getName(),
@@ -41,8 +41,12 @@ public record SpaceDetailResponse(
                 space.getMaxReservationHours(),
                 space.getFeatures(),
                 List.of(),
-                false
+                isFavorite
         );
+    }
+
+    public static SpaceDetailResponse from(Space space, int totalSeats, int availableSeats) {
+        return from(space, totalSeats, availableSeats, false);
     }
 
     private static String computeCongestion(int totalSeats, int availableSeats) {

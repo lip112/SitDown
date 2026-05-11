@@ -35,6 +35,7 @@ class SpaceServiceTest {
     @Mock SpaceRepository spaceRepository;
     @Mock SeatRepository seatRepository;
     @Mock ReservationRepository reservationRepository;
+    @Mock FavoriteService favoriteService;
     @InjectMocks SpaceService spaceService;
 
     private Space sampleSpace() {
@@ -110,7 +111,7 @@ class SpaceServiceTest {
         given(seatRepository.countBySpaceIdAndIsEnabledTrue(id)).willReturn(20L);
         given(reservationRepository.countOccupiedBySpaceId(eq(id), any())).willReturn(5L);
 
-        SpaceDetailResponse response = spaceService.getSpace(id);
+        SpaceDetailResponse response = spaceService.getSpace(id, null);
 
         assertThat(response.name()).isEqualTo("제1열람실");
         assertThat(response.totalSeats()).isEqualTo(20);
@@ -123,7 +124,7 @@ class SpaceServiceTest {
         UUID id = UUID.randomUUID();
         given(spaceRepository.findById(id)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> spaceService.getSpace(id))
+        assertThatThrownBy(() -> spaceService.getSpace(id, null))
                 .isInstanceOf(SpaceNotFoundException.class);
     }
 

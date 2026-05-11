@@ -97,6 +97,53 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
             """)
     long countOccupiedBySpaceId(@Param("spaceId") UUID spaceId, @Param("now") LocalDateTime now);
 
+    // SPACE-03: 특정 시간대(슬롯)에 공간에서 점유 중인 좌석 수
+    @Query("""
+            SELECT COUNT(DISTINCT r.seat.id)
+            FROM Reservation r
+            WHERE r.seat.space.id = :spaceId
+            AND r.status NOT IN ('CANCELED', 'NO_SHOW')
+            AND r.startAt < :slotEnd AND r.endAt > :slotStart
+            """)
+    long countOccupiedAtSlot(@Param("spaceId") UUID spaceId,
+                              @Param("slotStart") LocalDateTime slotStart,
+                              @Param("slotEnd") LocalDateTime slotEnd);
+
+    // STAT-01: 기간 내 날짜별 이용 시간(분)
+    @Query(nativeQuery = true, value = """
+            SELECT TO_CHAR(start_at AT TIME ZONE 'Asia/Seoul', 'YYYY-MM-DD') AS date,
+                   COALESCE(SUM(EXTRACT(EPOCH FROM (LEAST(end_at, :now) - start_at)) / 60), 0)::BIGINT AS minutes
+            FROM reservations
+            WHERE user_id = :userId
+              AND status IN ('COMPLETED', 'IN_USE', 'SCHEDULED')
+              AND start_at >= :from AND start_at < :to
+            GROUP BY date
+            ORDER BY date
+            """)
+    List<Object[]> findDailyMinutes(@Param("userId") UUID userId,
+                                     @Param("from") LocalDateTime from,
+                                     @Param("to") LocalDateTime to,
+                                     @Param("now") LocalDateTime now);
+
+    // STAT-01: 기간 내 공간별 이용 시간(분) Top 5
+    @Query(nativeQuery = true, value = """
+            SELECT s.space_id::TEXT, sp.name,
+                   COALESCE(SUM(EXTRACT(EPOCH FROM (LEAST(r.end_at, :now) - r.start_at)) / 60), 0)::BIGINT AS minutes
+            FROM reservations r
+            JOIN seats s  ON r.seat_id = s.id
+            JOIN spaces sp ON s.space_id = sp.id
+            WHERE r.user_id = :userId
+              AND r.status IN ('COMPLETED', 'IN_USE', 'SCHEDULED')
+              AND r.start_at >= :from AND r.start_at < :to
+            GROUP BY s.space_id, sp.name
+            ORDER BY minutes DESC
+            LIMIT 5
+            """)
+    List<Object[]> findTopSpaces(@Param("userId") UUID userId,
+                                  @Param("from") LocalDateTime from,
+                                  @Param("to") LocalDateTime to,
+                                  @Param("now") LocalDateTime now);
+
     // RSV-02 CANCELED
     @Query(value = """
             SELECT r FROM Reservation r JOIN FETCH r.seat s JOIN FETCH s.space

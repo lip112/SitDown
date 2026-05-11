@@ -19,8 +19,9 @@ import java.time.Duration;
 @EnableCaching
 public class CacheConfig {
 
-    private static final Duration SPACE_TTL = Duration.ofSeconds(30);
-    private static final Duration SEAT_TTL  = Duration.ofSeconds(10);
+    private static final Duration SPACE_TTL      = Duration.ofSeconds(30);
+    private static final Duration SEAT_TTL       = Duration.ofSeconds(10);
+    private static final Duration CONGESTION_TTL = Duration.ofMinutes(10);
 
     @Bean
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
@@ -34,13 +35,14 @@ public class CacheConfig {
                                     new GenericJackson2JsonRedisSerializer()));
 
             return RedisCacheManager.builder(connectionFactory)
-                    .withCacheConfiguration("space:list",   base.entryTtl(SPACE_TTL))
-                    .withCacheConfiguration("space:detail", base.entryTtl(SPACE_TTL))
-                    .withCacheConfiguration("seat:layout",  base.entryTtl(SEAT_TTL))
+                    .withCacheConfiguration("space:list",       base.entryTtl(SPACE_TTL))
+                    .withCacheConfiguration("space:detail",     base.entryTtl(SPACE_TTL))
+                    .withCacheConfiguration("seat:layout",      base.entryTtl(SEAT_TTL))
+                    .withCacheConfiguration("space:congestion", base.entryTtl(CONGESTION_TTL))
                     .build();
         } catch (Exception e) {
             log.warn("[Cache] Redis 연결 실패 — ConcurrentMapCacheManager 사용 (개발 환경 전용)");
-            return new ConcurrentMapCacheManager("space:list", "space:detail", "seat:layout");
+            return new ConcurrentMapCacheManager("space:list", "space:detail", "seat:layout", "space:congestion");
         }
     }
 }

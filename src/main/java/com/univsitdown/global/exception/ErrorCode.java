@@ -44,6 +44,12 @@ public enum ErrorCode {
     SEAT_GRID_SIZE_EXCEEDED("ADMIN-001", HttpStatus.BAD_REQUEST, "행과 열은 각각 최대 20까지 허용됩니다."),
     SEAT_ALREADY_EXISTS("ADMIN-002", HttpStatus.CONFLICT, "이미 좌석이 존재합니다."),
 
+    // NOTICE
+    NOTICE_NOT_FOUND("NOTI-001", HttpStatus.NOT_FOUND, "공지사항을 찾을 수 없습니다."),
+
+    // STAT
+    STAT_INVALID_PERIOD("STAT-001", HttpStatus.BAD_REQUEST, "유효하지 않은 조회 기간입니다."),
+
     // COMMON
     VALIDATION_FAILED("COMMON-100", HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다."),
     INTERNAL_SERVER_ERROR("COMMON-001", HttpStatus.INTERNAL_SERVER_ERROR, "잠시 후 다시 시도해 주세요."),

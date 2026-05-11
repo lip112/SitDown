@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/users")
@@ -27,5 +28,12 @@ public class UserController {
             @CurrentUser UserPrincipal principal,
             @Valid @RequestBody UpdateUserRequest request) {
         return ResponseEntity.ok(userService.updateUser(principal.userId(), request));
+    }
+
+    @PostMapping(value = "/me/profile-image", consumes = "multipart/form-data")
+    public ResponseEntity<UserResponse> uploadProfileImage(
+            @RequestParam("file") MultipartFile file,
+            @CurrentUser UserPrincipal principal) {
+        return ResponseEntity.ok(userService.updateProfileImage(principal.userId(), file));
     }
 }
