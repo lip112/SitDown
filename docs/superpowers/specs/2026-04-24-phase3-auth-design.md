@@ -86,7 +86,7 @@ RefreshTokenStore (interface)
 
 ```
 AUTH-02 발송:
-  Redis: "auth:email_verify:{email}" = {6자리 코드}, TTL 180초
+  Redis: "auth:email_verify:{email}" = {6자리 코드}, TTL 300초
   MailService.send() → LogMailService → log.info("[MAIL] to={} code={}")
 
 AUTH-03 확인:

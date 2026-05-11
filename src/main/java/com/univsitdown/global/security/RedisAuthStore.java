@@ -13,6 +13,7 @@ public class RedisAuthStore implements AuthStore {
     private static final String EMAIL_VERIFIED_PREFIX = "auth:email_verified:";
     private static final String REFRESH_USER_PREFIX = "auth:refresh:user:";
     private static final String REFRESH_TOKEN_PREFIX = "auth:refresh:token:";
+    private static final long EMAIL_CODE_EXPIRY_SECONDS = 300;
 
     private final StringRedisTemplate redis;
 
@@ -22,7 +23,7 @@ public class RedisAuthStore implements AuthStore {
 
     @Override
     public void saveEmailCode(String email, String code) {
-        redis.opsForValue().set(EMAIL_CODE_PREFIX + email, code, Duration.ofSeconds(180));
+        redis.opsForValue().set(EMAIL_CODE_PREFIX + email, code, Duration.ofSeconds(EMAIL_CODE_EXPIRY_SECONDS));
     }
 
     @Override

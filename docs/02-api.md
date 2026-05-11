@@ -252,7 +252,7 @@ POST /api/auth/email/send
 
 | 항목 | 내용 |
 |---|---|
-| 설명 | 회원가입 시 사용할 이메일로 6자리 인증 코드를 발송한다. 코드는 3분간 유효. |
+| 설명 | 회원가입 시 사용할 이메일로 6자리 인증 코드를 발송한다. 코드는 5분간 유효. |
 | 인증 | 불필요 |
 
 **Request Body**
@@ -265,7 +265,7 @@ POST /api/auth/email/send
 ```json
 {
   "email": "student@univ.com",
-  "expiresAt": "2026-04-22T09:03:00Z"
+  "expiresAt": "2026-04-22T09:05:00Z"
 }
 ```
 
@@ -277,7 +277,7 @@ POST /api/auth/email/send
 | 409 | `AUTH-104` | 이메일 중복 | 이미 가입된 이메일입니다. |
 | 429 | `AUTH-105` | 발송 제한 | 잠시 후 다시 시도해 주세요. (1분 1회) |
 
-> 📌 **구현 참고**: Redis에 `key=email:verify:{email}, value={code}, TTL=180s`로 저장. 재발송은 rate limit(1분 1회)을 둔다.
+> 📌 **구현 참고**: Redis에 `key=email:verify:{email}, value={code}, TTL=300s`로 저장. 재발송은 rate limit(1분 1회)을 둔다.
 
 ---
 

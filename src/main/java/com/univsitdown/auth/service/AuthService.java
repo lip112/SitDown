@@ -20,6 +20,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private static final long EMAIL_CODE_EXPIRY_SECONDS = 300;
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
@@ -57,7 +59,7 @@ public class AuthService {
         authStore.saveEmailCode(email, code);
         authStore.markEmailSent(email);
         mailService.sendVerificationCode(email, code);
-        return new EmailSendResponse(email, DateTimeUtils.nowPlusSecondsKst(180));
+        return new EmailSendResponse(email, DateTimeUtils.nowPlusSecondsKst(EMAIL_CODE_EXPIRY_SECONDS));
     }
 
     public EmailVerifyResponse verifyEmailCode(String email, String code) {

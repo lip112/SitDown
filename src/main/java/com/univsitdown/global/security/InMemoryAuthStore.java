@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class InMemoryAuthStore implements AuthStore {
 
-    // 이메일 → 발급된 6자리 인증 코드 (운영에서는 Redis TTL 180s)
+    // 이메일 → 발급된 6자리 인증 코드 (운영에서는 Redis TTL 300s)
     private final Map<String, String> emailCodes = new ConcurrentHashMap<>();
 
     // 최근 1분 이내에 코드를 발송한 이메일 목록 (운영에서는 Redis TTL 60s)
