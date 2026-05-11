@@ -291,14 +291,16 @@ void 동시에_100명이_같은_좌석을_예약하면_1명만_성공한다() th
 - ✅ RSV-04 `PATCH /api/reservations/{id}/extend` — 예약 연장
 - ✅ RSV-05 `DELETE /api/reservations/{id}` — 예약 취소
 
+- ✅ SPACE-03 `GET /api/spaces/{id}/congestion` — 혼잡도 예측 조회 (과거 4주 평균)
+- ✅ SPACE-04 `POST /api/spaces/{id}/favorite` — 즐겨찾기 추가
+- ✅ SPACE-05 `DELETE /api/spaces/{id}/favorite` — 즐겨찾기 해제
+- ✅ STAT-01 `GET /api/stats/me` — 내 이용 통계 조회
+- ✅ NOTI-01 `GET /api/notices` — 공지사항 목록 조회
+- ✅ NOTI-02 `GET /api/notices/{id}` — 공지사항 상세 조회
+- ✅ USER-03 `POST /api/users/me/profile-image` — 프로필 사진 업로드 (로컬 저장)
+
 ### 미구현 API
-- ❌ SPACE-03 `GET /api/spaces/{id}/congestion` — 혼잡도 예측 조회 (Phase 5)
-- ❌ SPACE-04 `POST /api/spaces/{id}/favorite` — 즐겨찾기 추가 (Phase 5)
-- ❌ SPACE-05 `DELETE /api/spaces/{id}/favorite` — 즐겨찾기 해제 (Phase 5)
-- ❌ STAT-01 `GET /api/stats/me` — 내 이용 통계 조회 (Phase 7)
-- ❌ NOTI-01 `GET /api/notices` — 공지사항 목록 조회 (Phase 7)
-- ❌ NOTI-02 `GET /api/notices/{id}` — 공지사항 상세 조회 (Phase 7)
-- ❌ USER-03 `POST /api/users/me/profile-image` — 프로필 사진 업로드 (Phase 7)
+(없음 — 모든 API 구현 완료)
 
 ---
 
