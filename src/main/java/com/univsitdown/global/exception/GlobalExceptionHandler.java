@@ -94,6 +94,7 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR, resolveTraceId(), request.getRequestURI()));
     }
 
+    // 16자리 hex traceId. MDC에 이미 있으면 같은 요청의 로그 추적 ID를 재사용한다.
     private String resolveTraceId() {
         String traceId = MDC.get("traceId");
         return traceId != null ? traceId : UUID.randomUUID().toString().replace("-", "").substring(0, 16);

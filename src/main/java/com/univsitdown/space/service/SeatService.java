@@ -101,6 +101,10 @@ public class SeatService {
         return SeatDetailResponse.of(seat, resolveSeatStatus(seat, occupiedIds));
     }
 
+    /**
+     * 관리자 비활성화(isEnabled=false)가 현재 점유 여부보다 우선한다.
+     * 점검 중인 좌석이 우연히 예약 없는 상태라도 AVAILABLE로 보이면 안 되기 때문이다.
+     */
     private SeatStatus resolveSeatStatus(Seat seat, Set<UUID> occupiedIds) {
         if (!seat.isEnabled()) return SeatStatus.UNAVAILABLE;
         if (occupiedIds.contains(seat.getId())) return SeatStatus.OCCUPIED;

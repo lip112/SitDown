@@ -34,6 +34,10 @@ public class SpaceService {
     private final ReservationRepository reservationRepository;
     private final FavoriteService favoriteService;
 
+    /**
+     * 캐시 키에 category·keyword·페이지 정보를 모두 포함해 필터 조합별로 독립 캐시를 유지한다.
+     * 예약 생성/취소 시 space:list 전체를 evict하므로 availableSeats 수치가 즉시 반영된다.
+     */
     @Transactional(readOnly = true)
     @Cacheable(value = "space:list",
                key = "#category + ':' + #keyword + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
