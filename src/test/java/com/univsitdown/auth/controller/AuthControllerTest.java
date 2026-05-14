@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
@@ -23,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AuthController.class)
 @Import(SecurityConfig.class)
+@TestPropertySource(properties = "app.cors.allowed-origins=http://frontend.example.com")
 class AuthControllerTest {
 
     @Autowired MockMvc mockMvc;
@@ -81,6 +84,17 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("new@univ.com"))
                 .andExpect(jsonPath("$.code").value("123456"));
+    }
+
+    @Test
+    void 허용된_프론트_오리진의_preflight_요청을_허용한다() throws Exception {
+        mockMvc.perform(options("/api/auth/email/send")
+                        .header(HttpHeaders.ORIGIN, "http://frontend.example.com")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "content-type"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://frontend.example.com"))
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,POST,PUT,PATCH,DELETE,OPTIONS"));
     }
 
     @Test
