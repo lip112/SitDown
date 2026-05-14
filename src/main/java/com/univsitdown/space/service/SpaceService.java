@@ -29,11 +29,15 @@ public class SpaceService {
     private final SeatRepository seatRepository;
     private final ReservationRepository reservationRepository;
 
+    /**
+     * 캐시 키에 category·keyword·페이지 정보를 모두 포함해 필터 조합별로 독립 캐시를 유지한다.
+     * 예약 생성/취소 시 space:list 전체를 evict하므로 availableSeats 수치가 즉시 반영된다.
+     */
     @Transactional(readOnly = true)
     @Cacheable(value = "space:list",
                key = "#category + ':' + #keyword + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public PageResponse<SpaceListItemResponse> getSpaces(SpaceCategory category, String keyword, Pageable pageable) {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         String keywordPattern = keyword != null ? "%" + keyword + "%" : null;
         Page<SpaceListItemResponse> page = spaceRepository
                 .findByFilters(category, keywordPattern, pageable)
@@ -46,7 +50,7 @@ public class SpaceService {
     public SpaceDetailResponse getSpace(UUID id) {
         Space space = spaceRepository.findById(id)
                 .orElseThrow(SpaceNotFoundException::new);
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         int total = (int) seatRepository.countBySpaceIdAndIsEnabledTrue(id);
         int occupied = (int) reservationRepository.countOccupiedBySpaceId(id, now);
         return SpaceDetailResponse.from(space, total, total - occupied);

@@ -26,6 +26,10 @@ public class AuthService {
     private final AuthStore authStore;
     private final MailService mailService;
 
+    /**
+     * 이메일 인증 → 중복 확인 → 저장 순서를 지킨다.
+     * 인증 마크를 마지막에 삭제해 가입 도중 오류가 나더라도 재시도가 가능하다.
+     */
     @Transactional
     public SignupResponse signup(SignupRequest request) {
         if (!authStore.isEmailVerified(request.email())) {
@@ -75,10 +79,12 @@ public class AuthService {
     public LoginResponse login(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(InvalidCredentialsException::new);
+        // 이메일 존재 여부와 비밀번호 불일치를 동일한 예외로 처리 — 계정 열거 공격 방지
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
             throw new InvalidCredentialsException();
         }
         String accessToken = jwtProvider.generateAccessToken(user.getId(), user.getRole());
+        // Refresh Token은 JWT가 아닌 랜덤 UUID — 만료·무효화를 Redis가 전담
         String refreshToken = UUID.randomUUID().toString();
         authStore.saveRefreshToken(user.getId(), refreshToken);
         return new LoginResponse(
@@ -104,6 +110,7 @@ public class AuthService {
     }
 
     public void resetPassword(String email) {
+        // 가입되지 않은 이메일이어도 200을 반환해 이메일 열거 공격을 방지한다
         userRepository.findByEmail(email).ifPresent(user ->
                 mailService.sendPasswordReset(email, "https://univ-sitdown.com/reset?token=placeholder")
         );

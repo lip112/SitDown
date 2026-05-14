@@ -58,7 +58,11 @@ public class Reservation {
         return r;
     }
 
-    // DB에는 SCHEDULED/CANCELED/NO_SHOW 만 저장하며, IN_USE/COMPLETED 는 now 기준 동적 계산
+    /**
+     * DB에는 SCHEDULED / CANCELED / NO_SHOW 만 영속화한다.
+     * IN_USE / COMPLETED 는 상태 전이 스케줄러 없이 now 기준으로 계산해 반환한다.
+     * 이로써 상태 동기화 배치 없이도 항상 정확한 상태를 제공할 수 있다.
+     */
     public ReservationStatus computedStatus(LocalDateTime now) {
         if (status == ReservationStatus.CANCELED || status == ReservationStatus.NO_SHOW) {
             return status;

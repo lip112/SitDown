@@ -6,6 +6,12 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Refresh Token을 양방향 조회할 수 있도록 두 가지 키를 동시에 저장한다.
+ *   - auth:refresh:user:{userId}  → token  (userId로 토큰 조회, 로그아웃 시 사용)
+ *   - auth:refresh:token:{token}  → userId (토큰으로 userId 조회, 갱신 시 사용)
+ * 두 키는 항상 같은 TTL(14일)로 함께 생성·삭제해 불일치를 방지한다.
+ */
 public class RedisAuthStore implements AuthStore {
 
     private static final String EMAIL_CODE_PREFIX = "auth:email_verify:";
@@ -47,6 +53,7 @@ public class RedisAuthStore implements AuthStore {
 
     @Override
     public void markEmailVerified(String email) {
+        // 인증 완료 마크는 10분간 유지 — 회원가입 완료까지 허용하는 여유 시간
         redis.opsForValue().set(EMAIL_VERIFIED_PREFIX + email, "true", Duration.ofSeconds(600));
     }
 
@@ -75,6 +82,7 @@ public class RedisAuthStore implements AuthStore {
 
     @Override
     public void deleteRefreshTokenByUserId(UUID userId) {
+        // user→token 역방향 키로 실제 토큰 값을 먼저 가져와 token→user 키도 함께 삭제
         String token = redis.opsForValue().get(REFRESH_USER_PREFIX + userId);
         if (token != null) {
             redis.delete(REFRESH_TOKEN_PREFIX + token);

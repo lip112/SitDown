@@ -35,6 +35,16 @@ public class ReservationService {
     private final SeatRepository seatRepository;
     private final UserRepository userRepository;
 
+    /**
+     * 예약 생성 — 이 프로젝트의 핵심 메서드.
+     *
+     * 동시성 이중 방어선:
+     *   1차) findByIdForUpdate → PostgreSQL row-level 락 (SELECT FOR UPDATE)
+     *   2차) DB EXCLUDE 제약 (seat_id + tsrange) — 락이 뚫려도 중복 INSERT 차단
+     *
+     * 검증 순서가 성능에 영향을 미친다. 락 획득 전에 시간 유효성을 먼저 체크해
+     * 무효한 요청이 불필요하게 DB 락을 경합하지 않도록 한다.
+     */
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = "space:list",   allEntries = true),
@@ -42,13 +52,14 @@ public class ReservationService {
             @CacheEvict(value = "seat:layout",  allEntries = true)
     })
     public CreateReservationResponse reserve(UUID userId, CreateReservationRequest request) {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         LocalDateTime startAt = request.startAt();
         LocalDateTime endAt = request.endAt();
 
+        // 락 획득 전 빠른 시간 유효성 검증 — DB 부하 최소화
         if (!endAt.isAfter(startAt)) throw new ReservationInvalidTimeException();
 
-        // SELECT FOR UPDATE로 row-level 락 획득
+        // SELECT FOR UPDATE: 같은 seatId에 대한 동시 트랜잭션을 직렬화
         Seat seat = seatRepository.findByIdForUpdate(request.seatId())
                 .orElseThrow(SeatNotFoundException::new);
 
@@ -65,10 +76,12 @@ public class ReservationService {
             throw new ReservationMaxDurationExceededException();
         }
 
+        // BR-01: 사용자당 활성 예약 1건 제한
         if (reservationRepository.countActiveByUserId(userId, now) >= 1) {
             throw new UserReservationLimitException();
         }
 
+        // 비관적 락 아래서 겹침 재확인 — 락 획득 사이에 다른 트랜잭션이 먼저 완료됐을 경우 대비
         if (reservationRepository.existsOverlapping(seat.getId(), startAt, endAt)) {
             throw new SeatAlreadyReservedException();
         }
@@ -78,10 +91,14 @@ public class ReservationService {
         return CreateReservationResponse.from(saved);
     }
 
+    /**
+     * IN_USE/COMPLETED 를 DB에 저장하지 않기 때문에,
+     * PAST 탭 = "SCHEDULED이면서 endAt < now", ACTIVE 탭 = "SCHEDULED이면서 endAt >= now"로 필터링.
+     */
     @Transactional(readOnly = true)
     public PageResponse<ReservationListItemResponse> getMyReservations(
             UUID userId, String statusFilter, Pageable pageable) {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         Page<Reservation> page = switch (statusFilter != null ? statusFilter : "ACTIVE") {
             case "PAST" -> reservationRepository.findPastByUserId(
                     userId, ReservationStatus.SCHEDULED, now, pageable);
@@ -100,9 +117,13 @@ public class ReservationService {
         if (!reservation.getUser().getId().equals(userId)) {
             throw new ReservationNotOwnerException();
         }
-        return ReservationDetailResponse.from(reservation, LocalDateTime.now(ZoneOffset.UTC));
+        return ReservationDetailResponse.from(reservation, LocalDateTime.now(ZoneOffset.ofHours(9)));
     }
 
+    /**
+     * 연장 시 겹침 검증은 현재 예약의 endAt~newEndAt 구간만 확인한다.
+     * 자신을 제외(excludeId)해야 현재 예약 자신과의 충돌을 false positive로 잡지 않는다.
+     */
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = "space:list",   allEntries = true),
@@ -117,7 +138,7 @@ public class ReservationService {
             throw new ReservationNotOwnerException();
         }
 
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         if (reservation.computedStatus(now) != ReservationStatus.IN_USE) {
             throw new ReservationNotExtendableException();
         }
@@ -152,7 +173,7 @@ public class ReservationService {
             throw new ReservationNotOwnerException();
         }
 
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         if (reservation.computedStatus(now) == ReservationStatus.COMPLETED) {
             throw new ReservationAlreadyEndedException();
         }

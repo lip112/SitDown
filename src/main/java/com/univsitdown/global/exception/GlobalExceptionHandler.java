@@ -50,6 +50,7 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR, generateTraceId(), request.getRequestURI()));
     }
 
+    // 16자리 hex traceId — MDC 없이도 단일 요청 로그를 추적할 수 있도록 에러 응답에 포함
     private String generateTraceId() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 16);
     }
