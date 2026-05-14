@@ -57,7 +57,7 @@ public class AuthService {
         authStore.saveEmailCode(email, code);
         authStore.markEmailSent(email);
         mailService.sendVerificationCode(email, code);
-        return new EmailSendResponse(email, DateTimeUtils.nowPlusSecondsKst(180));
+        return new EmailSendResponse(email, code, DateTimeUtils.nowPlusSecondsKst(180));
     }
 
     public EmailVerifyResponse verifyEmailCode(String email, String code) {

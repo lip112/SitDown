@@ -12,6 +12,7 @@ import com.univsitdown.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -85,9 +86,11 @@ class AuthServiceTest {
         EmailSendResponse response = authService.sendEmailCode("new@univ.com");
 
         assertThat(response.email()).isEqualTo("new@univ.com");
-        then(authStore).should().saveEmailCode(eq("new@univ.com"), anyString());
+        ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
+        then(authStore).should().saveEmailCode(eq("new@univ.com"), codeCaptor.capture());
+        assertThat(response.code()).isEqualTo(codeCaptor.getValue());
         then(authStore).should().markEmailSent("new@univ.com");
-        then(mailService).should().sendVerificationCode(eq("new@univ.com"), anyString());
+        then(mailService).should().sendVerificationCode(eq("new@univ.com"), eq(response.code()));
     }
 
     @Test

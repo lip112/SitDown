@@ -265,6 +265,7 @@ POST /api/auth/email/send
 ```json
 {
   "email": "student@univ.com",
+  "code": "123456",
   "expiresAt": "2026-04-22T09:03:00Z"
 }
 ```

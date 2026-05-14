@@ -73,13 +73,14 @@ class AuthControllerTest {
     void 이메일_코드_발송_정상() throws Exception {
         EmailSendRequest request = new EmailSendRequest("new@univ.com");
         given(authService.sendEmailCode("new@univ.com"))
-                .willReturn(new EmailSendResponse("new@univ.com", "2026-04-24T00:03:00Z"));
+                .willReturn(new EmailSendResponse("new@univ.com", "123456", "2026-04-24T00:03:00Z"));
 
         mockMvc.perform(post("/api/auth/email/send")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.email").value("new@univ.com"));
+                .andExpect(jsonPath("$.email").value("new@univ.com"))
+                .andExpect(jsonPath("$.code").value("123456"));
     }
 
     @Test
