@@ -23,7 +23,7 @@ public class SeatController {
             @RequestParam(required = false) String at) {
         LocalDateTime atTime = at != null
                 ? OffsetDateTime.parse(at).toLocalDateTime()
-                : LocalDateTime.now(ZoneOffset.UTC);
+                : LocalDateTime.now(ZoneOffset.ofHours(9));
         return seatService.getSeatLayout(id, atTime);
     }
 
@@ -33,7 +33,7 @@ public class SeatController {
             @RequestParam(required = false) String at) {
         LocalDateTime atTime = at != null
                 ? OffsetDateTime.parse(at).toLocalDateTime()
-                : LocalDateTime.now(ZoneOffset.UTC);
+                : LocalDateTime.now(ZoneOffset.ofHours(9));
         return seatService.getSeatDetail(id, atTime);
     }
 }

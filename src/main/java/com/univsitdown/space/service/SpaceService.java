@@ -33,7 +33,7 @@ public class SpaceService {
     @Cacheable(value = "space:list",
                key = "#category + ':' + #keyword + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public PageResponse<SpaceListItemResponse> getSpaces(SpaceCategory category, String keyword, Pageable pageable) {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         String keywordPattern = keyword != null ? "%" + keyword + "%" : null;
         Page<SpaceListItemResponse> page = spaceRepository
                 .findByFilters(category, keywordPattern, pageable)
@@ -46,7 +46,7 @@ public class SpaceService {
     public SpaceDetailResponse getSpace(UUID id) {
         Space space = spaceRepository.findById(id)
                 .orElseThrow(SpaceNotFoundException::new);
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         int total = (int) seatRepository.countBySpaceIdAndIsEnabledTrue(id);
         int occupied = (int) reservationRepository.countOccupiedBySpaceId(id, now);
         return SpaceDetailResponse.from(space, total, total - occupied);

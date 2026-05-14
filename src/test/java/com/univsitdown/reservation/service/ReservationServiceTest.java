@@ -180,7 +180,7 @@ class ReservationServiceTest {
     // --- extend ---
 
     private Reservation inUseReservation() {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         return Reservation.create(user, seat,
                 now.minusHours(1),
                 now.plusHours(1));
@@ -202,7 +202,7 @@ class ReservationServiceTest {
     @Test
     void extend_SCHEDULED상태_ReservationNotExtendableException() {
         UUID reservationId = UUID.randomUUID();
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         Reservation reservation = Reservation.create(user, seat,
                 now.plusHours(1),
                 now.plusHours(3));
@@ -228,7 +228,7 @@ class ReservationServiceTest {
     @Test
     void cancel_정상취소_성공() {
         UUID reservationId = UUID.randomUUID();
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         Reservation reservation = Reservation.create(user, seat,
                 now.plusHours(1),
                 now.plusHours(3));
@@ -243,7 +243,7 @@ class ReservationServiceTest {
     @Test
     void cancel_이미종료된예약_ReservationAlreadyEndedException() {
         UUID reservationId = UUID.randomUUID();
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         Reservation reservation = Reservation.create(user, seat,
                 now.minusHours(3),
                 now.minusHours(1));
@@ -256,7 +256,7 @@ class ReservationServiceTest {
     @Test
     void cancel_본인아닌예약_ReservationNotOwnerException() {
         UUID reservationId = UUID.randomUUID();
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         Reservation reservation = Reservation.create(user, seat,
                 now.plusHours(1),
                 now.plusHours(3));

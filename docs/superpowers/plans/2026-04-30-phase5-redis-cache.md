@@ -360,7 +360,7 @@ public class SpaceService {
     @Cacheable(value = "space:list",
                key = "#category + ':' + #keyword + ':' + #pageable.pageNumber + ':' + #pageable.pageSize")
     public PageResponse<SpaceListItemResponse> getSpaces(SpaceCategory category, String keyword, Pageable pageable) {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         String keywordPattern = keyword != null ? "%" + keyword + "%" : null;
         Page<SpaceListItemResponse> page = spaceRepository
                 .findByFilters(category, keywordPattern, pageable)
@@ -373,7 +373,7 @@ public class SpaceService {
     public SpaceDetailResponse getSpace(UUID id) {
         Space space = spaceRepository.findById(id)
                 .orElseThrow(SpaceNotFoundException::new);
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         int total = (int) seatRepository.countBySpaceIdAndIsEnabledTrue(id);
         int occupied = (int) reservationRepository.countOccupiedBySpaceId(id, now);
         return SpaceDetailResponse.from(space, total, total - occupied);
@@ -607,7 +607,7 @@ public class ReservationService {
             @CacheEvict(value = "seat:layout",  allEntries = true)
     })
     public CreateReservationResponse reserve(UUID userId, CreateReservationRequest request) {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         LocalDateTime startAt = request.startAt();
         LocalDateTime endAt = request.endAt();
 
@@ -645,7 +645,7 @@ public class ReservationService {
     @Transactional(readOnly = true)
     public PageResponse<ReservationListItemResponse> getMyReservations(
             UUID userId, String statusFilter, Pageable pageable) {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         Page<Reservation> page = switch (statusFilter != null ? statusFilter : "ACTIVE") {
             case "PAST" -> reservationRepository.findPastByUserId(
                     userId, ReservationStatus.SCHEDULED, now, pageable);
@@ -664,7 +664,7 @@ public class ReservationService {
         if (!reservation.getUser().getId().equals(userId)) {
             throw new ReservationNotOwnerException();
         }
-        return ReservationDetailResponse.from(reservation, LocalDateTime.now(ZoneOffset.UTC));
+        return ReservationDetailResponse.from(reservation, LocalDateTime.now(ZoneOffset.ofHours(9)));
     }
 
     @Transactional
@@ -681,7 +681,7 @@ public class ReservationService {
             throw new ReservationNotOwnerException();
         }
 
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         if (reservation.computedStatus(now) != ReservationStatus.IN_USE) {
             throw new ReservationNotExtendableException();
         }
@@ -716,7 +716,7 @@ public class ReservationService {
             throw new ReservationNotOwnerException();
         }
 
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         if (reservation.computedStatus(now) == ReservationStatus.COMPLETED) {
             throw new ReservationAlreadyEndedException();
         }
