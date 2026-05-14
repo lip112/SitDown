@@ -283,6 +283,10 @@ void 동시에_100명이_같은_좌석을_예약하면_1명만_성공한다() th
 - ✅ ADMIN-01 `POST /api/admin/spaces` — 공간 생성
 - ✅ ADMIN-02 `POST /api/admin/spaces/{id}/seats/grid` — 좌석 행/열 일괄 생성
 - ✅ ADMIN-03 `PATCH /api/admin/seats/{id}` — 좌석 상태 변경
+- ✅ ADMIN-04 `GET /api/admin/users` — 회원 목록 조회
+- ✅ ADMIN-05 `GET /api/admin/users/{id}` — 회원 상세 조회
+- ✅ ADMIN-06 `PATCH /api/admin/users/{id}` — 회원 정보 수정
+- ✅ ADMIN-07 `DELETE /api/admin/users/{id}` — 회원 삭제
 - ✅ SEAT-01 `GET /api/spaces/{id}/seats` — 좌석 배치 및 상태 조회
 - ✅ SEAT-02 `GET /api/seats/{id}` — 좌석 상세 조회
 - ✅ RSV-01 `POST /api/reservations` — 예약 생성 (비관적 락 + EXCLUDE 제약)

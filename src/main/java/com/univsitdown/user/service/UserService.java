@@ -1,5 +1,6 @@
 package com.univsitdown.user.service;
 
+import com.univsitdown.global.response.PageResponse;
 import com.univsitdown.user.domain.User;
 import com.univsitdown.user.dto.UpdateUserRequest;
 import com.univsitdown.user.dto.UserResponse;
@@ -7,6 +8,7 @@ import com.univsitdown.user.exception.UserNotFoundException;
 import com.univsitdown.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +33,11 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
         return UserResponse.from(user);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<UserResponse> getUsers(Pageable pageable) {
+        return PageResponse.from(userRepository.findAll(pageable).map(UserResponse::from));
     }
 
     @Transactional
@@ -61,6 +68,13 @@ public class UserService {
         String url = "/uploads/profiles/" + userId + "/" + filename;
         user.updateProfileImageUrl(url);
         return UserResponse.from(user);
+    }
+
+    @Transactional
+    public void deleteUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+        userRepository.delete(user);
     }
 
     private String getExtension(String originalFilename) {

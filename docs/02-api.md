@@ -182,6 +182,10 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | ADMIN-01 | POST | `/api/admin/spaces` | (관리자) 공간 생성 |
 | ADMIN-02 | POST | `/api/admin/spaces/{id}/seats/grid` | (관리자) 좌석 행/열 일괄 생성 |
 | ADMIN-03 | PATCH | `/api/admin/seats/{id}` | (관리자) 좌석 상태 변경 |
+| ADMIN-04 | GET | `/api/admin/users` | (관리자) 회원 목록 조회 |
+| ADMIN-05 | GET | `/api/admin/users/{id}` | (관리자) 회원 상세 조회 |
+| ADMIN-06 | PATCH | `/api/admin/users/{id}` | (관리자) 회원 정보 수정 |
+| ADMIN-07 | DELETE | `/api/admin/users/{id}` | (관리자) 회원 삭제 |
 
 ---
 
@@ -929,6 +933,121 @@ GET /api/notices
 ### 5.7 관리자 (ADMIN)
 
 이하 API는 `role=ADMIN` 권한을 가진 사용자만 호출 가능. 일반 사용자 호출 시 `403 Forbidden` 반환.
+
+---
+
+#### [ADMIN-04] 회원 목록 조회
+
+```
+GET /api/admin/users
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 전체 회원 목록을 페이지 단위로 조회한다. |
+| 인증 | Access Token (ADMIN) |
+
+**Query Parameters**
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `page` | int | X | 기본 0 |
+| `size` | int | X | 기본 20 |
+
+**Response (200 OK)**
+```json
+{
+  "content": [
+    {
+      "id": "user-001",
+      "email": "student@univ.com",
+      "name": "김학생",
+      "phone": "010-1234-5678",
+      "affiliation": "UNDERGRADUATE",
+      "profileImageUrl": null,
+      "role": "USER",
+      "createdAt": "2026-04-22T09:00:00Z"
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 1,
+  "totalPages": 1,
+  "hasNext": false
+}
+```
+
+---
+
+#### [ADMIN-05] 회원 상세 조회
+
+```
+GET /api/admin/users/{id}
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 회원 ID로 회원 상세 정보를 조회한다. |
+| 인증 | Access Token (ADMIN) |
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 404 | `USER-001` | 회원 없음 | 사용자를 찾을 수 없습니다. |
+
+---
+
+#### [ADMIN-06] 회원 정보 수정
+
+```
+PATCH /api/admin/users/{id}
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 회원의 이름, 전화번호, 소속을 수정한다. |
+| 인증 | Access Token (ADMIN) |
+
+**Request Body**
+
+| 필드 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `name` | string | X | 이름 (2자 이상 20자 이하) |
+| `phone` | string | X | 전화번호 (010-1234-5678 형식) |
+| `affiliation` | enum | X | 소속 (`Affiliation` 참고) |
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 400 | `COMMON-100` | 입력값 검증 실패 | 입력값이 올바르지 않습니다. |
+| 404 | `USER-001` | 회원 없음 | 사용자를 찾을 수 없습니다. |
+
+---
+
+#### [ADMIN-07] 회원 삭제
+
+```
+DELETE /api/admin/users/{id}
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 회원 ID로 회원을 삭제한다. |
+| 인증 | Access Token (ADMIN) |
+
+**Response**
+
+| 상태 | 설명 |
+|---|---|
+| 204 | 삭제 성공 |
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 404 | `USER-001` | 회원 없음 | 사용자를 찾을 수 없습니다. |
 
 ---
 
