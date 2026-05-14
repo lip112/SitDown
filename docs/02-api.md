@@ -187,6 +187,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | ADMIN-06 | PATCH | `/api/admin/users/{id}` | (관리자) 회원 정보 수정 |
 | ADMIN-07 | DELETE | `/api/admin/users/{id}` | (관리자) 회원 삭제 |
 | ADMIN-08 | GET | `/api/admin/dashboard` | (관리자) 대시보드 지표 조회 |
+| ADMIN-09 | POST | `/api/admin/notices` | (관리자) 공지사항 등록 |
+| ADMIN-10 | PATCH | `/api/admin/notices/{id}` | (관리자) 공지사항 수정 |
+| ADMIN-11 | DELETE | `/api/admin/notices/{id}` | (관리자) 공지사항 삭제 |
 
 ---
 
@@ -955,6 +958,112 @@ GET /api/admin/dashboard
   "activeReservationCount": 3
 }
 ```
+
+---
+
+#### [ADMIN-09] 공지사항 등록
+
+```
+POST /api/admin/notices
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 관리자 페이지에서 노출할 공지사항을 등록한다. |
+| 인증 | Access Token (ADMIN) |
+
+**Request Body**
+
+| 필드 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `title` | string | O | 제목 (최대 200자) |
+| `content` | string | O | 본문 |
+| `category` | enum | O | `INFO` / `MAINTENANCE` / `EVENT` |
+| `publishedAt` | datetime | X | 발행 시각. 미입력 시 서버 현재 시각 |
+| `expiresAt` | datetime | X | 만료 시각 |
+
+**Response (201 Created)**
+```json
+{
+  "id": "36752627-fdd0-43cf-a74a-e08795f21700",
+  "title": "도서관 이용 안내",
+  "content": "열람실 이용 시 음식을 반입을 금지합니다.",
+  "category": "INFO",
+  "publishedAt": "2026-05-14T09:00:00+09:00"
+}
+```
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 400 | `COMMON-100` | 입력값 검증 실패 | 입력값이 올바르지 않습니다. |
+
+---
+
+#### [ADMIN-10] 공지사항 수정
+
+```
+PATCH /api/admin/notices/{id}
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 공지사항의 제목, 본문, 카테고리, 발행/만료 시각을 수정한다. 요청에 포함된 필드만 변경한다. |
+| 인증 | Access Token (ADMIN) |
+
+**Request Body**
+
+| 필드 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `title` | string | X | 제목 (1자 이상 200자 이하) |
+| `content` | string | X | 본문 (1자 이상) |
+| `category` | enum | X | `INFO` / `MAINTENANCE` / `EVENT` |
+| `publishedAt` | datetime | X | 발행 시각 |
+| `expiresAt` | datetime | X | 만료 시각 |
+
+**Response (200 OK)**
+```json
+{
+  "id": "36752627-fdd0-43cf-a74a-e08795f21700",
+  "title": "수정된 공지",
+  "content": "수정된 내용입니다.",
+  "category": "EVENT",
+  "publishedAt": "2026-05-14T09:00:00+09:00"
+}
+```
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 400 | `COMMON-100` | 입력값 검증 실패 | 입력값이 올바르지 않습니다. |
+| 404 | `NOTI-001` | 공지사항 없음 | 공지사항을 찾을 수 없습니다. |
+
+---
+
+#### [ADMIN-11] 공지사항 삭제
+
+```
+DELETE /api/admin/notices/{id}
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 공지사항을 비활성화 처리하여 사용자 목록과 상세 조회에서 제외한다. |
+| 인증 | Access Token (ADMIN) |
+
+**Response**
+
+| 상태 | 설명 |
+|---|---|
+| 204 | 삭제 성공 |
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 404 | `NOTI-001` | 공지사항 없음 | 공지사항을 찾을 수 없습니다. |
 
 ---
 

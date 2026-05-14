@@ -39,4 +39,40 @@ public class Notice {
 
     @Column(nullable = false, updatable = false)
     private Instant createdAt;
+
+    public static Notice create(String title, String content, NoticeCategory category,
+                                Instant publishedAt, Instant expiresAt) {
+        Notice notice = new Notice();
+        notice.title = title;
+        notice.content = content;
+        notice.category = category;
+        notice.isActive = true;
+        notice.publishedAt = publishedAt == null ? Instant.now() : publishedAt;
+        notice.expiresAt = expiresAt;
+        notice.createdAt = Instant.now();
+        return notice;
+    }
+
+    public void update(String title, String content, NoticeCategory category,
+                       Instant publishedAt, Instant expiresAt) {
+        if (title != null) {
+            this.title = title;
+        }
+        if (content != null) {
+            this.content = content;
+        }
+        if (category != null) {
+            this.category = category;
+        }
+        if (publishedAt != null) {
+            this.publishedAt = publishedAt;
+        }
+        if (expiresAt != null) {
+            this.expiresAt = expiresAt;
+        }
+    }
+
+    public void deactivate() {
+        this.isActive = false;
+    }
 }

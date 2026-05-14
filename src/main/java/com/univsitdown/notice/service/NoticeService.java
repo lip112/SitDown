@@ -3,8 +3,10 @@ package com.univsitdown.notice.service;
 import com.univsitdown.global.response.PageResponse;
 import com.univsitdown.notice.domain.Notice;
 import com.univsitdown.notice.domain.NoticeCategory;
+import com.univsitdown.notice.dto.CreateNoticeRequest;
 import com.univsitdown.notice.dto.NoticeDetailResponse;
 import com.univsitdown.notice.dto.NoticeListItemResponse;
+import com.univsitdown.notice.dto.UpdateNoticeRequest;
 import com.univsitdown.notice.exception.NoticeNotFoundException;
 import com.univsitdown.notice.repository.NoticeRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +38,42 @@ public class NoticeService {
         return noticeRepository.findById(id)
                 .filter(Notice::isActive)
                 .map(NoticeDetailResponse::from)
+                .orElseThrow(NoticeNotFoundException::new);
+    }
+
+    @Transactional
+    public NoticeDetailResponse createNotice(CreateNoticeRequest request) {
+        Notice notice = Notice.create(
+                request.title(),
+                request.content(),
+                request.category(),
+                request.publishedAt(),
+                request.expiresAt()
+        );
+        return NoticeDetailResponse.from(noticeRepository.save(notice));
+    }
+
+    @Transactional
+    public NoticeDetailResponse updateNotice(UUID id, UpdateNoticeRequest request) {
+        Notice notice = findActiveNotice(id);
+        notice.update(
+                request.title(),
+                request.content(),
+                request.category(),
+                request.publishedAt(),
+                request.expiresAt()
+        );
+        return NoticeDetailResponse.from(notice);
+    }
+
+    @Transactional
+    public void deleteNotice(UUID id) {
+        findActiveNotice(id).deactivate();
+    }
+
+    private Notice findActiveNotice(UUID id) {
+        return noticeRepository.findById(id)
+                .filter(Notice::isActive)
                 .orElseThrow(NoticeNotFoundException::new);
     }
 }

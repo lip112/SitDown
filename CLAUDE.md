@@ -288,6 +288,9 @@ void 동시에_100명이_같은_좌석을_예약하면_1명만_성공한다() th
 - ✅ ADMIN-06 `PATCH /api/admin/users/{id}` — 회원 정보 수정
 - ✅ ADMIN-07 `DELETE /api/admin/users/{id}` — 회원 삭제
 - ✅ ADMIN-08 `GET /api/admin/dashboard` — 대시보드 지표 조회
+- ✅ ADMIN-09 `POST /api/admin/notices` — 공지사항 등록
+- ✅ ADMIN-10 `PATCH /api/admin/notices/{id}` — 공지사항 수정
+- ✅ ADMIN-11 `DELETE /api/admin/notices/{id}` — 공지사항 삭제
 - ✅ SEAT-01 `GET /api/spaces/{id}/seats` — 좌석 배치 및 상태 조회
 - ✅ SEAT-02 `GET /api/seats/{id}` — 좌석 상세 조회
 - ✅ RSV-01 `POST /api/reservations` — 예약 생성 (비관적 락 + EXCLUDE 제약)
