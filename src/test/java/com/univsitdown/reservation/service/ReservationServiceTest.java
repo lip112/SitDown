@@ -144,9 +144,10 @@ class ReservationServiceTest {
     @Test
     void getReservation_정상조회_성공() {
         UUID reservationId = UUID.randomUUID();
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         Reservation reservation = Reservation.create(user, seat,
-                LocalDateTime.of(2026, 5, 1, 9, 0),
-                LocalDateTime.of(2026, 5, 1, 11, 0));
+                now.plusHours(1),
+                now.plusHours(3));
         ReflectionTestUtils.setField(reservation, "id", reservationId);
         given(reservationRepository.findById(reservationId)).willReturn(Optional.of(reservation));
 
