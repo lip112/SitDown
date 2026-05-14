@@ -47,6 +47,13 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
             """)
     long countActiveByUserId(@Param("userId") UUID userId, @Param("now") LocalDateTime now);
 
+    @Query("""
+            SELECT COUNT(r) FROM Reservation r
+            WHERE r.status = 'SCHEDULED'
+            AND r.endAt >= :now
+            """)
+    long countActive(@Param("now") LocalDateTime now);
+
     // SEAT-01: at 시점에 해당 공간에서 점유 중인 seat ID 목록
     @Query("""
             SELECT r.seat.id FROM Reservation r

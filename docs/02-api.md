@@ -186,6 +186,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | ADMIN-05 | GET | `/api/admin/users/{id}` | (관리자) 회원 상세 조회 |
 | ADMIN-06 | PATCH | `/api/admin/users/{id}` | (관리자) 회원 정보 수정 |
 | ADMIN-07 | DELETE | `/api/admin/users/{id}` | (관리자) 회원 삭제 |
+| ADMIN-08 | GET | `/api/admin/dashboard` | (관리자) 대시보드 지표 조회 |
 
 ---
 
@@ -933,6 +934,27 @@ GET /api/notices
 ### 5.7 관리자 (ADMIN)
 
 이하 API는 `role=ADMIN` 권한을 가진 사용자만 호출 가능. 일반 사용자 호출 시 `403 Forbidden` 반환.
+
+---
+
+#### [ADMIN-08] 대시보드 지표 조회
+
+```
+GET /api/admin/dashboard
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 관리자 대시보드에 표시할 공간 수와 활성 예약 수를 조회한다. |
+| 인증 | Access Token (ADMIN) |
+
+**Response (200 OK)**
+```json
+{
+  "spaceCount": 6,
+  "activeReservationCount": 3
+}
+```
 
 ---
 
