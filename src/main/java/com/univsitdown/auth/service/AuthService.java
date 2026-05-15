@@ -27,14 +27,10 @@ public class AuthService {
     private final MailService mailService;
 
     /**
-     * 이메일 인증 → 중복 확인 → 저장 순서를 지킨다.
-     * 인증 마크를 마지막에 삭제해 가입 도중 오류가 나더라도 재시도가 가능하다.
+     * 이메일 중복 확인 → 저장 순서를 지킨다.
      */
     @Transactional
     public SignupResponse signup(SignupRequest request) {
-        if (!authStore.isEmailVerified(request.email())) {
-            throw new EmailNotVerifiedException();
-        }
         if (userRepository.existsByEmail(request.email())) {
             throw new EmailDuplicatedException();
         }
@@ -46,7 +42,6 @@ public class AuthService {
                 request.affiliation()
         );
         userRepository.save(user);
-        authStore.deleteEmailVerified(request.email());
         return SignupResponse.from(user);
     }
 

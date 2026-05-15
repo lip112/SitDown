@@ -82,7 +82,7 @@ RefreshTokenStore (interface)
 
 애플리케이션 시작 시 `RedisTemplate.opsForValue().get("ping")` 호출로 연결을 확인하고, `RedisConnectionFailureException` 발생 시 InMemory 구현체를 사용한다. `@ConditionalOnBean` / `@Primary` 조합으로 구현체 전환이 자동으로 이루어진다.
 
-## 7. 이메일 인증 흐름
+## 7. 레거시 이메일 인증 흐름
 
 ```
 AUTH-02 발송:
@@ -94,7 +94,7 @@ AUTH-03 확인:
   불일치 → AUTH-111 / 키 없음 → AUTH-112
 
 AUTH-01 회원가입:
-  "auth:email_verified:{email}" 존재 확인 → 없으면 AUTH-103
+  userRepository.existsByEmail(email) 중복 확인 → 중복이면 AUTH-104 → 아니면 저장
 ```
 
 ## 8. 경로별 권한
@@ -126,7 +126,7 @@ AUTH-01 회원가입:
 | 레이어 | 방법 | 주요 케이스 |
 |---|---|---|
 | JwtProvider | 순수 단위 | 토큰 생성/파싱, 만료 토큰 거부 |
-| AuthService | Mockito 단위 | 정상 회원가입, 이메일 중복, 미인증, 정상 로그인, 자격증명 실패, 토큰 갱신 |
+| AuthService | Mockito 단위 | 이메일 인증 없는 정상 회원가입, 이메일 중복, 정상 로그인, 자격증명 실패, 토큰 갱신 |
 | AuthController | @WebMvcTest + MockMvc | 요청 검증 400, 정상 응답 201/200 |
 | JwtFilter | MockMvc with Security | 토큰 없는 요청 401, 유효 토큰 통과, 만료 토큰 401 |
 

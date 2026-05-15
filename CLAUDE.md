@@ -251,7 +251,7 @@ void 동시에_100명이_같은_좌석을_예약하면_1명만_성공한다() th
 ### TTL 가이드
 - 공간 목록/혼잡도: 30초
 - 좌석 배치 상태: 10초 또는 캐시 생략
-- 이메일 인증 코드: 180초
+- 이메일 인증 코드: 180초 (레거시 이메일 인증 API 사용 시)
 - Refresh Token: 14일
 
 ### 무효화 타이밍
@@ -270,8 +270,8 @@ void 동시에_100명이_같은_좌석을_예약하면_1명만_성공한다() th
 
 ### 구현 완료 API
 - ✅ AUTH-01 `POST /api/auth/signup` — 회원가입
-- ✅ AUTH-02 `POST /api/auth/email/send` — 이메일 인증 코드 발송
-- ✅ AUTH-03 `POST /api/auth/email/verify` — 이메일 인증 코드 확인
+- ✅ AUTH-02 `POST /api/auth/email/send` — 이메일 인증 코드 발송 (회원가입 플로우 미사용)
+- ✅ AUTH-03 `POST /api/auth/email/verify` — 이메일 인증 코드 확인 (회원가입 플로우 미사용)
 - ✅ AUTH-04 `POST /api/auth/login` — 로그인 (JWT 발급)
 - ✅ AUTH-05 `POST /api/auth/refresh` — 토큰 갱신
 - ✅ AUTH-06 `POST /api/auth/logout` — 로그아웃

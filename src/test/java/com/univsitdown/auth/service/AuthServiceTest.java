@@ -43,8 +43,7 @@ class AuthServiceTest {
     }
 
     @Test
-    void 정상_회원가입() {
-        given(authStore.isEmailVerified("test@univ.com")).willReturn(true);
+    void 이메일_인증_없이_정상_회원가입() {
         given(userRepository.existsByEmail("test@univ.com")).willReturn(false);
         given(passwordEncoder.encode("Serv1ce$Test")).willReturn("hashed");
         given(userRepository.save(any(User.class))).willReturn(sampleUser);
@@ -54,22 +53,11 @@ class AuthServiceTest {
 
         assertThat(response.email()).isEqualTo("test@univ.com");
         assertThat(response.name()).isEqualTo("홍길동");
-        then(authStore).should().deleteEmailVerified("test@univ.com");
-    }
-
-    @Test
-    void 이메일_미인증_회원가입_시_예외() {
-        given(authStore.isEmailVerified("test@univ.com")).willReturn(false);
-
-        SignupRequest request = new SignupRequest("test@univ.com", "Serv1ce$Test", "홍길동", null, null);
-
-        assertThatThrownBy(() -> authService.signup(request))
-                .isInstanceOf(EmailNotVerifiedException.class);
+        then(authStore).shouldHaveNoInteractions();
     }
 
     @Test
     void 이메일_중복_회원가입_시_예외() {
-        given(authStore.isEmailVerified("test@univ.com")).willReturn(true);
         given(userRepository.existsByEmail("test@univ.com")).willReturn(true);
 
         SignupRequest request = new SignupRequest("test@univ.com", "Serv1ce$Test", "홍길동", null, null);
