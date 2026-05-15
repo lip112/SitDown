@@ -216,16 +216,21 @@ public class GlobalExceptionHandler {
 - ElastiCache Redis — 관리형 Redis
 - VPC, Security Group, IAM 기본 개념
 - Docker로 앱 컨테이너화
+- Docker Compose + Nginx reverse proxy로 프론트/백엔드 단일 도메인 라우팅
 - GitHub Actions로 CI/CD 파이프라인
 - ALB + Route53으로 도메인 연결
 - CloudWatch Logs로 중앙 집중 로그
 
 ### 실습 과제
 1. Dockerfile과 docker-compose.yml 작성 후 로컬에서 실행
-2. ECR에 이미지 푸시 → ECS Fargate에 배포
-3. RDS PostgreSQL / ElastiCache Redis 생성 및 연결
-4. GitHub Actions 워크플로: `main` 브랜치 머지 시 자동 배포
-5. 도메인 구매 후 Route53 + ALB 연결
+2. Nginx 컨테이너를 추가해 `/api/**`, `/api-docs`, `/swagger-ui/**`는 백엔드로, 나머지는 프론트로 라우팅
+3. 운영 `.env`의 `CORS_ALLOWED_ORIGINS`, `FRONTEND_API_BASE_URL`을 실제 도메인 기준으로 설정
+4. ECR에 이미지 푸시 → ECS Fargate에 배포
+5. RDS PostgreSQL / ElastiCache Redis 생성 및 연결
+6. GitHub Actions 워크플로: `main` 브랜치 머지 시 자동 배포
+7. 도메인 구매 후 Route53 + ALB 연결
+
+현재 Docker Compose + Nginx 운영 메모는 `docs/04-deployment.md`에 정리한다.
 
 > 💰 **1년차 팁 — 비용 주의**: AWS는 처음에 비용 폭탄이 날 가능성이 있다. 프리티어를 반드시 확인하고, 안 쓰는 리소스는 종료할 것. 무엇보다 **Billing Alarm**을 꼭 걸어두자 ($5, $20 임계치 추천).
 

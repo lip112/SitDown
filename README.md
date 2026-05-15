@@ -14,7 +14,8 @@ your-project/
 ├── docs/
 │   ├── 01-spec.md
 │   ├── 02-api.md
-│   └── 03-backend-roadmap.md
+│   ├── 03-backend-roadmap.md
+│   └── 04-deployment.md
 └── README.md
 ```
 
@@ -52,6 +53,7 @@ CLAUDE.md 의 규칙을 따라 DTO, Service, Controller, 테스트까지.
 | `docs/01-spec.md` | 기능 명세 (화면, 비즈니스 규칙, 데이터 모델) |
 | `docs/02-api.md` | **핵심** - 전체 API 명세, 에러 코드 |
 | `docs/03-backend-roadmap.md` | Phase별 학습 로드맵 |
+| `docs/04-deployment.md` | Docker Compose + Nginx 운영 배포 메모 |
 
 ---
 
@@ -108,6 +110,27 @@ docker compose up -d
 
 # Swagger UI
 open http://localhost:8080/swagger-ui.html
+```
+
+---
+
+## 🌐 현재 운영 배포 구조
+
+현재 운영 도메인은 Nginx reverse proxy를 앞에 두고, Docker Compose 내부 서비스로 라우팅한다.
+
+| URL | 대상 |
+|---|---|
+| `http://sitdown.bond/` | 프론트엔드 |
+| `http://sitdown.bond/api/**` | 백엔드 API |
+| `http://sitdown.bond/swagger-ui/index.html` | Swagger UI |
+| `http://sitdown.bond/api-docs` | OpenAPI JSON |
+
+Nginx는 `/api/**`, `/api-docs`, `/api-docs/`, `/swagger-ui/**`, `/swagger-ui.html`을 백엔드(`backend:8080`)로 보내고, 나머지는 프론트엔드(`frontend:3000`)로 보낸다. 자세한 설정과 장애 대응은 `docs/04-deployment.md`를 참조한다.
+
+운영 CORS는 `application.yml` 기본값보다 `CORS_ALLOWED_ORIGINS` 환경변수가 우선한다. Docker Compose의 `.env`에 운영 도메인을 포함해야 한다.
+
+```env
+CORS_ALLOWED_ORIGINS=http://sitdown.bond,http://www.sitdown.bond,https://sitdown.bond,https://www.sitdown.bond
 ```
 
 ---

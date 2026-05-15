@@ -16,10 +16,13 @@
 ### 1.3 기본 URL
 
 ```
-Production : https://api.univ-sitdown.com/api
-Develop    : https://dev-api.univ-sitdown.com/api
+Production : http://sitdown.bond/api
+OpenAPI    : http://sitdown.bond/api-docs
+Swagger UI : http://sitdown.bond/swagger-ui/index.html
 Local      : http://localhost:8080/api
 ```
+
+운영 환경은 Nginx reverse proxy를 통해 같은 도메인에서 프론트와 백엔드를 라우팅한다. HTTPS 적용 후에는 위 운영 URL의 scheme을 `https`로 맞춘다.
 
 ### 1.4 공통 규약
 
