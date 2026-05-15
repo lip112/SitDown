@@ -158,8 +158,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | API ID | Method | Endpoint | 설명 |
 |---|---|---|---|
 | AUTH-01 | POST | `/api/auth/signup` | 회원가입 |
-| AUTH-02 | POST | `/api/auth/email/send` | 이메일 인증 코드 발송 (레거시, 회원가입 미사용) |
-| AUTH-03 | POST | `/api/auth/email/verify` | 이메일 인증 코드 확인 (레거시, 회원가입 미사용) |
+| AUTH-02 | POST | `/api/auth/email/send` | 이메일 인증 코드 발송 |
+| AUTH-03 | POST | `/api/auth/email/verify` | 이메일 인증 코드 확인 |
 | AUTH-04 | POST | `/api/auth/login` | 로그인 (JWT 발급) |
 | AUTH-05 | POST | `/api/auth/refresh` | 토큰 갱신 |
 | AUTH-06 | POST | `/api/auth/logout` | 로그아웃 |
@@ -262,7 +262,7 @@ POST /api/auth/email/send
 
 | 항목 | 내용 |
 |---|---|
-| 설명 | 레거시 이메일 인증 코드 발송 API. 현재 회원가입 플로우에서는 사용하지 않는다. 코드는 3분간 유효. |
+| 설명 | 이메일 인증 코드를 발급해 메일 발송 경로로 전달한다. 코드는 3분간 유효하다. |
 | 인증 | 불필요 |
 
 **Request Body**
@@ -288,7 +288,7 @@ POST /api/auth/email/send
 | 409 | `AUTH-104` | 이메일 중복 | 이미 가입된 이메일입니다. |
 | 429 | `AUTH-105` | 발송 제한 | 잠시 후 다시 시도해 주세요. (1분 1회) |
 
-> 📌 **구현 참고**: Redis에 `key=email:verify:{email}, value={code}, TTL=180s`로 저장. 재발송은 rate limit(1분 1회)을 둔다.
+> 📌 **구현 참고**: Redis에 `key=auth:email_verify:{email}, value={code}, TTL=180s`로 저장. 재발송은 rate limit(1분 1회)을 둔다.
 
 ---
 
@@ -300,7 +300,7 @@ POST /api/auth/email/verify
 
 | 항목 | 내용 |
 |---|---|
-| 설명 | 레거시 이메일 인증 코드 확인 API. 현재 회원가입 플로우에서는 사용하지 않는다. |
+| 설명 | 발급된 이메일 인증 코드 일치 여부를 확인하고 인증 완료 상태를 저장한다. |
 | 인증 | 불필요 |
 
 **Request Body**
@@ -1308,7 +1308,7 @@ WHERE (status IN ('SCHEDULED','IN_USE','EXTENDED'));
 
 ### 7.4 Rate Limiting
 
-- 레거시 이메일 인증 코드 발송: 동일 이메일 1분 1회
+- 이메일 인증 코드 발송: 동일 이메일 1분 1회
 - 로그인: IP당 5분에 20회 (무차별 대입 방지)
 - 일반 API: 사용자당 100 req/min (Redis 기반 Token Bucket)
 

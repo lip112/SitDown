@@ -14,7 +14,6 @@
 - `git log --oneline -10` - View recent commits
 
 ## Documentation
-- Project CLAUDE.md contains project-specific rules
 - API spec: @docs/02-api.md
 - Feature spec: @docs/01-spec.md
 - Backend roadmap: @docs/03-backend-roadmap.md
