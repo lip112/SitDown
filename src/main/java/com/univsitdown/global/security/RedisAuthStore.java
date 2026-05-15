@@ -14,9 +14,6 @@ import java.util.UUID;
  */
 public class RedisAuthStore implements AuthStore {
 
-    private static final String EMAIL_CODE_PREFIX = "auth:email_verify:";
-    private static final String EMAIL_RATE_PREFIX = "auth:email_ratelimit:";
-    private static final String EMAIL_VERIFIED_PREFIX = "auth:email_verified:";
     private static final String REFRESH_USER_PREFIX = "auth:refresh:user:";
     private static final String REFRESH_TOKEN_PREFIX = "auth:refresh:token:";
 
@@ -24,47 +21,6 @@ public class RedisAuthStore implements AuthStore {
 
     public RedisAuthStore(StringRedisTemplate redis) {
         this.redis = redis;
-    }
-
-    @Override
-    public void saveEmailCode(String email, String code) {
-        redis.opsForValue().set(EMAIL_CODE_PREFIX + email, code, Duration.ofSeconds(180));
-    }
-
-    @Override
-    public Optional<String> findEmailCode(String email) {
-        return Optional.ofNullable(redis.opsForValue().get(EMAIL_CODE_PREFIX + email));
-    }
-
-    @Override
-    public void deleteEmailCode(String email) {
-        redis.delete(EMAIL_CODE_PREFIX + email);
-    }
-
-    @Override
-    public boolean isEmailRateLimited(String email) {
-        return Boolean.TRUE.equals(redis.hasKey(EMAIL_RATE_PREFIX + email));
-    }
-
-    @Override
-    public void markEmailSent(String email) {
-        redis.opsForValue().set(EMAIL_RATE_PREFIX + email, "1", Duration.ofSeconds(60));
-    }
-
-    @Override
-    public void markEmailVerified(String email) {
-        // 인증 완료 마크는 10분간 유지 — 회원가입 완료까지 허용하는 여유 시간
-        redis.opsForValue().set(EMAIL_VERIFIED_PREFIX + email, "true", Duration.ofSeconds(600));
-    }
-
-    @Override
-    public boolean isEmailVerified(String email) {
-        return Boolean.TRUE.equals(redis.hasKey(EMAIL_VERIFIED_PREFIX + email));
-    }
-
-    @Override
-    public void deleteEmailVerified(String email) {
-        redis.delete(EMAIL_VERIFIED_PREFIX + email);
     }
 
     @Override

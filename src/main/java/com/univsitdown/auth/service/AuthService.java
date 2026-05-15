@@ -12,8 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.univsitdown.global.util.DateTimeUtils;
-import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -45,29 +43,12 @@ public class AuthService {
         return SignupResponse.from(user);
     }
 
-    public EmailSendResponse sendEmailCode(String email) {
+    @Transactional(readOnly = true)
+    public EmailCheckResponse checkEmail(String email) {
         if (userRepository.existsByEmail(email)) {
             throw new EmailDuplicatedException();
         }
-        if (authStore.isEmailRateLimited(email)) {
-            throw new EmailSendRateLimitException();
-        }
-        String code = generateSixDigitCode();
-        authStore.saveEmailCode(email, code);
-        authStore.markEmailSent(email);
-        mailService.sendVerificationCode(email, code);
-        return new EmailSendResponse(email, code, DateTimeUtils.nowPlusSecondsKst(180));
-    }
-
-    public EmailVerifyResponse verifyEmailCode(String email, String code) {
-        String stored = authStore.findEmailCode(email)
-                .orElseThrow(ExpiredEmailCodeException::new);
-        if (!stored.equals(code)) {
-            throw new InvalidEmailCodeException();
-        }
-        authStore.markEmailVerified(email);
-        authStore.deleteEmailCode(email);
-        return new EmailVerifyResponse(true);
+        return new EmailCheckResponse(email, true);
     }
 
     @Transactional(readOnly = true)
@@ -111,7 +92,4 @@ public class AuthService {
         );
     }
 
-    private String generateSixDigitCode() {
-        return String.format("%06d", new Random().nextInt(1_000_000));
-    }
 }

@@ -7,11 +7,7 @@ public enum ErrorCode {
     // AUTH
     INVALID_EMAIL_FORMAT("AUTH-101", HttpStatus.BAD_REQUEST, "유효한 이메일을 입력해 주세요."),
     INVALID_PASSWORD_POLICY("AUTH-102", HttpStatus.BAD_REQUEST, "비밀번호는 8자 이상, 영문/숫자/특수문자를 포함해야 합니다."),
-    EMAIL_NOT_VERIFIED("AUTH-103", HttpStatus.BAD_REQUEST, "이메일 인증을 먼저 완료해 주세요."),
     EMAIL_DUPLICATED("AUTH-104", HttpStatus.CONFLICT, "이미 가입된 이메일입니다."),
-    EMAIL_SEND_RATE_LIMIT("AUTH-105", HttpStatus.TOO_MANY_REQUESTS, "잠시 후 다시 시도해 주세요."),
-    INVALID_EMAIL_CODE("AUTH-111", HttpStatus.BAD_REQUEST, "인증 코드가 올바르지 않습니다."),
-    EXPIRED_EMAIL_CODE("AUTH-112", HttpStatus.BAD_REQUEST, "인증 코드가 만료되었습니다. 재발송해 주세요."),
     INVALID_CREDENTIALS("AUTH-201", HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."),
     ACCOUNT_LOCKED("AUTH-202", HttpStatus.LOCKED, "로그인 5회 실패로 계정이 잠겼습니다."),
     EXPIRED_REFRESH_TOKEN("AUTH-211", HttpStatus.UNAUTHORIZED, "다시 로그인해 주세요."),

@@ -12,7 +12,6 @@ import com.univsitdown.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -67,62 +66,25 @@ class AuthServiceTest {
     }
 
     @Test
-    void 정상_이메일_코드_발송() {
+    void 사용_가능한_이메일_중복_확인() {
         given(userRepository.existsByEmail("new@univ.com")).willReturn(false);
-        given(authStore.isEmailRateLimited("new@univ.com")).willReturn(false);
 
-        EmailSendResponse response = authService.sendEmailCode("new@univ.com");
+        EmailCheckResponse response = authService.checkEmail("new@univ.com");
 
         assertThat(response.email()).isEqualTo("new@univ.com");
-        ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
-        then(authStore).should().saveEmailCode(eq("new@univ.com"), codeCaptor.capture());
-        assertThat(response.code()).isEqualTo(codeCaptor.getValue());
-        then(authStore).should().markEmailSent("new@univ.com");
-        then(mailService).should().sendVerificationCode(eq("new@univ.com"), eq(response.code()));
+        assertThat(response.available()).isTrue();
+        then(authStore).shouldHaveNoInteractions();
+        then(mailService).shouldHaveNoInteractions();
     }
 
     @Test
-    void 이미_가입된_이메일_코드_발송_시_예외() {
+    void 이미_가입된_이메일_중복_확인_시_예외() {
         given(userRepository.existsByEmail("test@univ.com")).willReturn(true);
 
-        assertThatThrownBy(() -> authService.sendEmailCode("test@univ.com"))
+        assertThatThrownBy(() -> authService.checkEmail("test@univ.com"))
                 .isInstanceOf(EmailDuplicatedException.class);
-    }
-
-    @Test
-    void 발송_rate_limit_초과_시_예외() {
-        given(userRepository.existsByEmail("new@univ.com")).willReturn(false);
-        given(authStore.isEmailRateLimited("new@univ.com")).willReturn(true);
-
-        assertThatThrownBy(() -> authService.sendEmailCode("new@univ.com"))
-                .isInstanceOf(EmailSendRateLimitException.class);
-    }
-
-    @Test
-    void 정상_이메일_코드_확인() {
-        given(authStore.findEmailCode("test@univ.com")).willReturn(Optional.of("123456"));
-
-        EmailVerifyResponse response = authService.verifyEmailCode("test@univ.com", "123456");
-
-        assertThat(response.verified()).isTrue();
-        then(authStore).should().markEmailVerified("test@univ.com");
-        then(authStore).should().deleteEmailCode("test@univ.com");
-    }
-
-    @Test
-    void 코드_불일치_시_예외() {
-        given(authStore.findEmailCode("test@univ.com")).willReturn(Optional.of("123456"));
-
-        assertThatThrownBy(() -> authService.verifyEmailCode("test@univ.com", "999999"))
-                .isInstanceOf(InvalidEmailCodeException.class);
-    }
-
-    @Test
-    void 코드_만료_시_예외() {
-        given(authStore.findEmailCode("test@univ.com")).willReturn(Optional.empty());
-
-        assertThatThrownBy(() -> authService.verifyEmailCode("test@univ.com", "123456"))
-                .isInstanceOf(ExpiredEmailCodeException.class);
+        then(authStore).shouldHaveNoInteractions();
+        then(mailService).shouldHaveNoInteractions();
     }
 
     @Test

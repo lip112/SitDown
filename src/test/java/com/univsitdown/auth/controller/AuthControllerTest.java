@@ -73,41 +73,40 @@ class AuthControllerTest {
     }
 
     @Test
-    void 이메일_코드_발송_정상() throws Exception {
-        EmailSendRequest request = new EmailSendRequest("new@univ.com");
-        given(authService.sendEmailCode("new@univ.com"))
-                .willReturn(new EmailSendResponse("new@univ.com", "123456", "2026-04-24T00:03:00Z"));
+    void 이메일_중복_확인_정상() throws Exception {
+        EmailCheckRequest request = new EmailCheckRequest("new@univ.com");
+        given(authService.checkEmail("new@univ.com"))
+                .willReturn(new EmailCheckResponse("new@univ.com", true));
 
-        mockMvc.perform(post("/api/auth/email/send")
+        mockMvc.perform(post("/api/auth/email/check")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("new@univ.com"))
-                .andExpect(jsonPath("$.code").value("123456"));
+                .andExpect(jsonPath("$.available").value(true));
+    }
+
+    @Test
+    void 이메일_중복_확인_중복_409() throws Exception {
+        EmailCheckRequest request = new EmailCheckRequest("test@univ.com");
+        given(authService.checkEmail("test@univ.com")).willThrow(new EmailDuplicatedException());
+
+        mockMvc.perform(post("/api/auth/email/check")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("AUTH-104"));
     }
 
     @Test
     void 허용된_프론트_오리진의_preflight_요청을_허용한다() throws Exception {
-        mockMvc.perform(options("/api/auth/email/send")
+        mockMvc.perform(options("/api/auth/email/check")
                         .header(HttpHeaders.ORIGIN, "http://frontend.example.com")
                         .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST")
                         .header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "content-type"))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://frontend.example.com"))
                 .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,POST,PUT,PATCH,DELETE,OPTIONS"));
-    }
-
-    @Test
-    void 이메일_코드_확인_정상() throws Exception {
-        EmailVerifyRequest request = new EmailVerifyRequest("test@univ.com", "123456");
-        given(authService.verifyEmailCode("test@univ.com", "123456"))
-                .willReturn(new EmailVerifyResponse(true));
-
-        mockMvc.perform(post("/api/auth/email/verify")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.verified").value(true));
     }
 
     @Test

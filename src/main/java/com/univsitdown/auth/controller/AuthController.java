@@ -22,14 +22,9 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.signup(request));
     }
 
-    @PostMapping("/email/send")
-    public ResponseEntity<EmailSendResponse> sendEmailCode(@Valid @RequestBody EmailSendRequest request) {
-        return ResponseEntity.ok(authService.sendEmailCode(request.email()));
-    }
-
-    @PostMapping("/email/verify")
-    public ResponseEntity<EmailVerifyResponse> verifyEmailCode(@Valid @RequestBody EmailVerifyRequest request) {
-        return ResponseEntity.ok(authService.verifyEmailCode(request.email(), request.code()));
+    @PostMapping("/email/check")
+    public ResponseEntity<EmailCheckResponse> checkEmail(@Valid @RequestBody EmailCheckRequest request) {
+        return ResponseEntity.ok(authService.checkEmail(request.email()));
     }
 
     @PostMapping("/login")

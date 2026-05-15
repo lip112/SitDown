@@ -10,14 +10,6 @@ package com.univsitdown.global.security;
 public interface MailService {
 
     /**
-     * 이메일 인증 코드 발송
-     *
-     * @param to 수신자 이메일
-     * @param code 6자리 인증 코드
-     */
-    void sendVerificationCode(String to, String code);
-
-    /**
      * 비밀번호 재설정 링크 발송
      *
      * @param to 수신자 이메일

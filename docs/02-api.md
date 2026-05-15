@@ -158,8 +158,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | API ID | Method | Endpoint | 설명 |
 |---|---|---|---|
 | AUTH-01 | POST | `/api/auth/signup` | 회원가입 |
-| AUTH-02 | POST | `/api/auth/email/send` | 이메일 인증 코드 발송 |
-| AUTH-03 | POST | `/api/auth/email/verify` | 이메일 인증 코드 확인 |
+| AUTH-02 | POST | `/api/auth/email/check` | 이메일 중복 확인 |
 | AUTH-04 | POST | `/api/auth/login` | 로그인 (JWT 발급) |
 | AUTH-05 | POST | `/api/auth/refresh` | 토큰 갱신 |
 | AUTH-06 | POST | `/api/auth/logout` | 로그아웃 |
@@ -254,29 +253,28 @@ POST /api/auth/signup
 
 ---
 
-#### [AUTH-02] 이메일 인증 코드 발송
+#### [AUTH-02] 이메일 중복 확인
 
 ```
-POST /api/auth/email/send
+POST /api/auth/email/check
 ```
 
 | 항목 | 내용 |
 |---|---|
-| 설명 | 이메일 인증 코드를 발급해 메일 발송 경로로 전달한다. 코드는 3분간 유효하다. |
+| 설명 | 입력한 이메일이 가입 가능한지 확인한다. 이미 가입된 이메일이면 `AUTH-104`를 반환한다. |
 | 인증 | 불필요 |
 
 **Request Body**
 
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `email` | string | O | 인증 코드를 받을 이메일 |
+| `email` | string | O | 중복 확인할 이메일 |
 
 **Response (200 OK)**
 ```json
 {
   "email": "student@univ.com",
-  "code": "123456",
-  "expiresAt": "2026-04-22T09:03:00Z"
+  "available": true
 }
 ```
 
@@ -286,41 +284,6 @@ POST /api/auth/email/send
 |---|---|---|---|
 | 400 | `AUTH-101` | 이메일 형식 오류 | 유효한 이메일을 입력해 주세요. |
 | 409 | `AUTH-104` | 이메일 중복 | 이미 가입된 이메일입니다. |
-| 429 | `AUTH-105` | 발송 제한 | 잠시 후 다시 시도해 주세요. (1분 1회) |
-
-> 📌 **구현 참고**: Redis에 `key=auth:email_verify:{email}, value={code}, TTL=180s`로 저장. 재발송은 rate limit(1분 1회)을 둔다.
-
----
-
-#### [AUTH-03] 이메일 인증 코드 확인
-
-```
-POST /api/auth/email/verify
-```
-
-| 항목 | 내용 |
-|---|---|
-| 설명 | 발급된 이메일 인증 코드 일치 여부를 확인하고 인증 완료 상태를 저장한다. |
-| 인증 | 불필요 |
-
-**Request Body**
-
-| 필드 | 타입 | 필수 | 설명 |
-|---|---|---|---|
-| `email` | string | O | 인증 대상 이메일 |
-| `code` | string | O | 6자리 숫자 코드 |
-
-**Response (200 OK)**
-```json
-{ "verified": true }
-```
-
-**Error Responses**
-
-| 상태 | 에러 코드 | 발생 조건 | 메시지 |
-|---|---|---|---|
-| 400 | `AUTH-111` | 코드 불일치 | 인증 코드가 올바르지 않습니다. |
-| 400 | `AUTH-112` | 코드 만료 | 인증 코드가 만료되었습니다. 재발송해 주세요. |
 
 ---
 
@@ -1308,7 +1271,6 @@ WHERE (status IN ('SCHEDULED','IN_USE','EXTENDED'));
 
 ### 7.4 Rate Limiting
 
-- 이메일 인증 코드 발송: 동일 이메일 1분 1회
 - 로그인: IP당 5분에 20회 (무차별 대입 방지)
 - 일반 API: 사용자당 100 req/min (Redis 기반 Token Bucket)
 
@@ -1323,9 +1285,6 @@ WHERE (status IN ('SCHEDULED','IN_USE','EXTENDED'));
 | `AUTH-101` | 400 | 이메일 형식 오류 | 유효한 이메일을 입력해 주세요. |
 | `AUTH-102` | 400 | 비밀번호 정책 위반 | 비밀번호는 8자 이상, 영문/숫자/특수문자를 포함해야 합니다. |
 | `AUTH-104` | 409 | 이메일 중복 | 이미 가입된 이메일입니다. |
-| `AUTH-105` | 429 | 발송 제한 | 잠시 후 다시 시도해 주세요. |
-| `AUTH-111` | 400 | 인증 코드 불일치 | 인증 코드가 올바르지 않습니다. |
-| `AUTH-112` | 400 | 인증 코드 만료 | 인증 코드가 만료되었습니다. 재발송해 주세요. |
 | `AUTH-201` | 401 | 자격 증명 실패 | 이메일 또는 비밀번호가 올바르지 않습니다. |
 | `AUTH-202` | 423 | 계정 잠김 | 로그인 5회 실패로 계정이 잠겼습니다. |
 | `AUTH-211` | 401 | Refresh Token 만료 | 다시 로그인해 주세요. |
