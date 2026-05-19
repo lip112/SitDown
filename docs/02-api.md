@@ -515,7 +515,7 @@ GET /api/spaces
 | 항목 | 내용 |
 |---|---|
 | 설명 | 공간 목록 조회. 카테고리와 키워드 필터링 가능. 각 공간의 현재 혼잡도 포함. |
-| 인증 | Access Token |
+| 인증 | 불필요 |
 
 **Query Parameters**
 
@@ -565,7 +565,7 @@ GET /api/spaces/{id}
 | 항목 | 내용 |
 |---|---|
 | 설명 | 특정 공간의 상세 정보 반환. |
-| 인증 | Access Token |
+| 인증 | 불필요 (로그인 시 즐겨찾기 여부 반영) |
 
 **Path Parameters**
 
@@ -611,7 +611,7 @@ GET /api/spaces/{id}/congestion
 | 항목 | 내용 |
 |---|---|
 | 설명 | 공간의 시간대별 혼잡도 예측(막대 그래프용) 데이터 반환. |
-| 인증 | Access Token |
+| 인증 | 불필요 |
 
 **Path Parameters**
 
@@ -701,7 +701,7 @@ GET /api/spaces/{id}/seats
 | 항목 | 내용 |
 |---|---|
 | 설명 | 특정 공간의 모든 좌석 배치와 현재 상태 반환. 클라이언트는 이 응답으로 좌석 그리드를 렌더링. |
-| 인증 | Access Token |
+| 인증 | 불필요 |
 
 **Path Parameters**
 
@@ -747,7 +747,7 @@ GET /api/seats/{id}
 | 항목 | 내용 |
 |---|---|
 | 설명 | 특정 좌석의 위치, 상태, 소속 공간 정보를 조회한다. |
-| 인증 | Access Token |
+| 인증 | 불필요 |
 
 **Path Parameters**
 
@@ -1071,7 +1071,7 @@ GET /api/notices
 | 항목 | 내용 |
 |---|---|
 | 설명 | 공지사항 목록을 카테고리별로 조회. |
-| 인증 | Access Token |
+| 인증 | 불필요 |
 
 **Query Parameters**
 
@@ -1112,7 +1112,7 @@ GET /api/notices/{id}
 | 항목 | 내용 |
 |---|---|
 | 설명 | 활성 상태인 공지사항의 상세 내용을 조회한다. |
-| 인증 | Access Token |
+| 인증 | 불필요 |
 
 **Path Parameters**
 
@@ -1591,9 +1591,10 @@ WHERE (status IN ('SCHEDULED','IN_USE','EXTENDED'));
 |---|:---:|:---:|:---:|---|
 | AUTH (로그인/가입) | ✅ | - | - | 비로그인 접근 |
 | USER (내 정보) | ❌ | ✅ | ✅ | 본인 정보만 |
-| SPACE/SEAT 조회 | ❌ | ✅ | ✅ | 로그인 필요 |
+| SPACE/SEAT 조회 | ✅ | ✅ | ✅ | 조회만 비로그인 접근 |
 | RSV (예약) | ❌ | ✅ | ✅ | 본인 예약만 수정/취소 |
-| STAT/NOTI | ❌ | ✅ | ✅ | - |
+| STAT | ❌ | ✅ | ✅ | 개인 통계 |
+| NOTI 조회 | ✅ | ✅ | ✅ | 비로그인 접근 |
 | ADMIN | ❌ | ❌ | ✅ | 관리자 전용 |
 
 ### 7.4 Rate Limiting

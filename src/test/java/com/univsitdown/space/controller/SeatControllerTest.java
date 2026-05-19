@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -33,8 +32,7 @@ class SeatControllerTest {
     @MockBean JwtProvider jwtProvider;
 
     @Test
-    @WithMockUser
-    void getSeatLayout_200() throws Exception {
+    void getSeatLayout_Guest_200() throws Exception {
         UUID spaceId = UUID.randomUUID();
         SeatItemResponse item = new SeatItemResponse(UUID.randomUUID().toString(), "A-1", 1, 1, "AVAILABLE", List.of());
         given(seatService.getSeatLayout(any(), any()))
@@ -47,8 +45,7 @@ class SeatControllerTest {
     }
 
     @Test
-    @WithMockUser
-    void getSeatLayout_없는공간_404() throws Exception {
+    void getSeatLayout_Guest_없는공간_404() throws Exception {
         given(seatService.getSeatLayout(any(), any())).willThrow(new SpaceNotFoundException());
 
         mockMvc.perform(get("/api/spaces/{id}/seats", UUID.randomUUID()))
@@ -57,8 +54,7 @@ class SeatControllerTest {
     }
 
     @Test
-    @WithMockUser
-    void getSeatDetail_200() throws Exception {
+    void getSeatDetail_Guest_200() throws Exception {
         UUID seatId = UUID.randomUUID();
         SeatDetailResponse response = new SeatDetailResponse(
                 seatId.toString(), "A-1", 1, 1, "AVAILABLE", List.of(),
@@ -72,8 +68,7 @@ class SeatControllerTest {
     }
 
     @Test
-    @WithMockUser
-    void getSeatDetail_없는좌석_404() throws Exception {
+    void getSeatDetail_Guest_없는좌석_404() throws Exception {
         given(seatService.getSeatDetail(any(), any())).willThrow(new SeatNotFoundException());
 
         mockMvc.perform(get("/api/seats/{id}", UUID.randomUUID()))

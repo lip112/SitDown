@@ -1,6 +1,7 @@
 package com.univsitdown.space.controller;
 
 import com.univsitdown.global.response.PageResponse;
+import com.univsitdown.space.dto.CongestionPredictionResponse;
 import com.univsitdown.space.dto.SpaceDetailResponse;
 import com.univsitdown.space.dto.SpaceListItemResponse;
 import com.univsitdown.space.exception.SpaceNotFoundException;
@@ -13,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -54,8 +54,7 @@ class SpaceControllerTest {
     );
 
     @Test
-    @WithMockUser
-    void getSpaces_200() throws Exception {
+    void getSpaces_Guest_200() throws Exception {
         given(spaceService.getSpaces(any(), any(), any()))
                 .willReturn(new PageResponse<>(List.of(SAMPLE_LIST_ITEM), 0, 20, 1, 1, false));
 
@@ -67,8 +66,7 @@ class SpaceControllerTest {
     }
 
     @Test
-    @WithMockUser
-    void getSpace_200() throws Exception {
+    void getSpace_Guest_200() throws Exception {
         UUID id = UUID.randomUUID();
         given(spaceService.getSpace(eq(id), any())).willReturn(SAMPLE_DETAIL);
 
@@ -79,13 +77,26 @@ class SpaceControllerTest {
     }
 
     @Test
-    @WithMockUser
-    void getSpace_없는ID_404() throws Exception {
+    void getSpace_Guest_없는ID_404() throws Exception {
         UUID id = UUID.randomUUID();
         given(spaceService.getSpace(eq(id), any())).willThrow(new SpaceNotFoundException());
 
         mockMvc.perform(get("/api/spaces/{id}", id))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("SPACE-001"));
+    }
+
+    @Test
+    void getCongestion_Guest_200() throws Exception {
+        UUID id = UUID.randomUUID();
+        given(spaceService.getCongestionPrediction(eq(id), any()))
+                .willReturn(new CongestionPredictionResponse(
+                        id.toString(),
+                        "2026-05-19",
+                        List.of(new CongestionPredictionResponse.HourlyItem(9, 0.25, "LOW"))));
+
+        mockMvc.perform(get("/api/spaces/{id}/congestion", id))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.hourly[0].level").value("LOW"));
     }
 }
