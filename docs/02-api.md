@@ -436,6 +436,43 @@ PATCH /api/users/me
 
 ---
 
+#### [USER-03] 프로필 사진 업로드
+
+```
+POST /api/users/me/profile-image
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 현재 로그인한 사용자의 프로필 사진을 업로드하고, 갱신된 사용자 정보를 반환한다. |
+| 인증 | Access Token |
+| Content-Type | `multipart/form-data` |
+
+**Request Parts**
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `file` | file | O | 업로드할 프로필 이미지 파일 |
+
+**Response (200 OK)**: 갱신된 사용자 정보 (USER-01과 동일 포맷)
+
+```json
+{
+  "id": "a3f9b2c1-...",
+  "email": "student@univ.com",
+  "name": "김학생",
+  "phone": "010-1234-5678",
+  "affiliation": "UNDERGRADUATE",
+  "profileImageUrl": "/uploads/profiles/a3f9b2c1-.../a3f9b2c1-..._4f2d9c.jpg",
+  "role": "USER",
+  "createdAt": "2025-03-01T09:00:00"
+}
+```
+
+> 📌 **구현 참고**: 서버는 업로드 파일을 `app.upload-dir` 하위 `profiles/{userId}` 경로에 저장하고, `/uploads/profiles/{userId}/{filename}` 형식의 URL을 사용자 프로필에 저장한다.
+
+---
+
 ### 5.3 공간 (SPACE)
 
 ---
