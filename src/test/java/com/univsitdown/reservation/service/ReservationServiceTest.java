@@ -85,6 +85,25 @@ class ReservationServiceTest {
     }
 
     @Test
+    void reserve_자정종료운영시간_자정전예약_성공() {
+        ReflectionTestUtils.setField(space, "closeTime", LocalTime.MIDNIGHT);
+        CreateReservationRequest request = new CreateReservationRequest(
+                seatId,
+                LocalDateTime.of(2026, 5, 19, 23, 22),
+                LocalDateTime.of(2026, 5, 19, 23, 42)
+        );
+        given(seatRepository.findByIdForUpdate(seatId)).willReturn(Optional.of(seat));
+        given(reservationRepository.countActiveByUserId(any(), any())).willReturn(0L);
+        given(reservationRepository.existsOverlapping(any(), any(), any())).willReturn(false);
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(reservationRepository.save(any())).willAnswer(inv -> inv.getArgument(0));
+
+        CreateReservationResponse response = reservationService.reserve(userId, request);
+
+        assertThat(response.seatLabel()).isEqualTo("A-1");
+    }
+
+    @Test
     void reserve_종료시간이_시작시간보다_이른경우_예외() {
         CreateReservationRequest bad = new CreateReservationRequest(
                 seatId,

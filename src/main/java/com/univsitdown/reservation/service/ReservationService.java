@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -66,8 +67,7 @@ public class ReservationService {
         if (!seat.isEnabled()) throw new SeatUnavailableException();
 
         var space = seat.getSpace();
-        if (startAt.toLocalTime().isBefore(space.getOpenTime()) ||
-            endAt.toLocalTime().isAfter(space.getCloseTime())) {
+        if (!isWithinOperatingHours(startAt, endAt, space.getOpenTime(), space.getCloseTime())) {
             throw new ReservationOutOfHoursException();
         }
 
@@ -89,6 +89,28 @@ public class ReservationService {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
         Reservation saved = reservationRepository.save(Reservation.create(user, seat, startAt, endAt));
         return CreateReservationResponse.from(saved);
+    }
+
+    private boolean isWithinOperatingHours(
+            LocalDateTime startAt,
+            LocalDateTime endAt,
+            LocalTime openTime,
+            LocalTime closeTime
+    ) {
+        boolean closesAtMidnight = closeTime.equals(LocalTime.MIDNIGHT);
+        boolean endsAtNextMidnight = endAt.toLocalDate().equals(startAt.toLocalDate().plusDays(1))
+                && endAt.toLocalTime().equals(LocalTime.MIDNIGHT);
+
+        if (closesAtMidnight && endsAtNextMidnight) {
+            return !startAt.toLocalTime().isBefore(openTime);
+        }
+
+        if (!startAt.toLocalDate().equals(endAt.toLocalDate())) {
+            return false;
+        }
+
+        return !startAt.toLocalTime().isBefore(openTime)
+                && (closesAtMidnight || !endAt.toLocalTime().isAfter(closeTime));
     }
 
     /**

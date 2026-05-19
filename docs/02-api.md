@@ -40,6 +40,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 #### 날짜/시간 포맷
 - 모든 날짜·시간은 ISO 8601 KST 형식 (예: `2026-04-22T18:00:00+09:00`)
 - 서버가 KST(`+09:00`) 오프셋을 포함하여 반환하므로 클라이언트 별도 변환 불필요
+- 운영 종료 시각 `closeTime`이 `00:00:00`이면 운영일의 자정 종료를 의미한다. 예를 들어 `06:00:00-00:00:00` 공간은 같은 날 `23:42:00` 종료 예약과 다음날 `00:00:00` 종료 예약을 운영 시간 내로 본다.
 
 #### 페이지네이션
 - 목록 조회 API는 `page`(0-based), `size`(기본 20, 최대 100) 쿼리 파라미터 지원
@@ -774,7 +775,7 @@ POST /api/reservations
 |---|---|---|---|
 | `seatId` | string(UUID) | O | 예약할 좌석 ID |
 | `startAt` | string(ISO8601 local datetime) | O | 시작 일시 (KST 기준, 오프셋 없이 전달) |
-| `endAt` | string(ISO8601 local datetime) | O | 종료 일시 (KST 기준, 오프셋 없이 전달) |
+| `endAt` | string(ISO8601 local datetime) | O | 종료 일시 (KST 기준, 오프셋 없이 전달). `closeTime`이 `00:00:00`인 공간은 다음날 `00:00:00` 종료까지 허용 |
 
 **요청 예시**
 ```json
@@ -1138,7 +1139,7 @@ POST /api/admin/spaces
 | `floor` | int | O | 층수 (1 이상) |
 | `category` | enum | O | `READING_ROOM` / `STUDY_ROOM` / `PC_ROOM` / `LECTURE_ROOM` |
 | `openTime` | string(HH:mm:ss) | O | 운영 시작 시각 |
-| `closeTime` | string(HH:mm:ss) | O | 운영 종료 시각 |
+| `closeTime` | string(HH:mm:ss) | O | 운영 종료 시각. `00:00:00`은 운영일의 자정 종료를 의미 |
 | `maxReservationHours` | int | O | 최대 예약 시간 (1 ~ 8) |
 | `features` | string[] | X | 공간 편의 기능 목록 |
 | `thumbnailUrl` | string | X | 대표 이미지 URL |
