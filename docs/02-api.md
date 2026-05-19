@@ -162,7 +162,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | AUTH-04 | POST | `/api/auth/login` | 로그인 (JWT 발급) |
 | AUTH-05 | POST | `/api/auth/refresh` | 토큰 갱신 |
 | AUTH-06 | POST | `/api/auth/logout` | 로그아웃 |
-| AUTH-07 | POST | `/api/auth/password/reset` | 비밀번호 재설정 메일 발송 |
 | USER-01 | GET | `/api/users/me` | 내 정보 조회 |
 | USER-02 | PATCH | `/api/users/me` | 내 정보 수정 |
 | USER-03 | POST | `/api/users/me/profile-image` | 프로필 사진 업로드 |
@@ -373,39 +372,10 @@ POST /api/auth/logout
 
 | 항목 | 내용 |
 |---|---|
-| 설명 | 현재 사용자의 Refresh Token을 무효화한다. Access Token은 만료 시까지 유효하므로 클라이언트에서도 삭제해야 한다. |
-| 인증 | Access Token |
+| 설명 | Access Token이 전달되면 현재 사용자의 Refresh Token을 무효화한다. 토큰 없이 호출해도 성공 응답을 반환하므로 클라이언트는 보유 토큰을 함께 삭제해야 한다. |
+| 인증 | 선택 (Access Token) |
 
 **Response**: `204 No Content`
-
----
-
-#### [AUTH-07] 비밀번호 재설정 메일 발송
-
-```
-POST /api/auth/password/reset
-```
-
-| 항목 | 내용 |
-|---|---|
-| 설명 | 입력한 이메일로 비밀번호 재설정 링크를 발송한다. 가입되지 않은 이메일이어도 동일하게 성공 응답을 반환한다. |
-| 인증 | 불필요 |
-
-**Request Body**
-
-| 필드 | 타입 | 필수 | 설명 |
-|---|---|---|---|
-| `email` | string | O | 비밀번호 재설정 링크를 받을 이메일 |
-
-**Response**: `204 No Content`
-
-**Error Responses**
-
-| 상태 | 에러 코드 | 발생 조건 | 메시지 |
-|---|---|---|---|
-| 400 | `COMMON-100` | 이메일 누락 또는 형식 오류 | 입력값이 올바르지 않습니다. |
-
-> 📌 **구현 참고**: 이메일 존재 여부 노출을 막기 위해 미가입 이메일도 `204 No Content`를 반환한다. 현재 로컬/개발 구현은 실제 메일 발송 대신 재설정 링크를 로그에 기록한다.
 
 ---
 
@@ -434,7 +404,7 @@ GET /api/users/me
   "affiliation": "UNDERGRADUATE",
   "profileImageUrl": "https://cdn.univ-sitdown.com/profile/a3f9.jpg",
   "role": "USER",
-  "createdAt": "2025-03-01T00:00:00Z"
+  "createdAt": "2025-03-01T09:00:00+09:00"
 }
 ```
 
@@ -494,7 +464,7 @@ POST /api/users/me/profile-image
   "affiliation": "UNDERGRADUATE",
   "profileImageUrl": "/uploads/profiles/a3f9b2c1-.../a3f9b2c1-..._4f2d9c.jpg",
   "role": "USER",
-  "createdAt": "2025-03-01T09:00:00"
+  "createdAt": "2025-03-01T09:00:00+09:00"
 }
 ```
 
@@ -521,7 +491,7 @@ GET /api/spaces
 
 | 이름 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `category` | enum | X | `SpaceCategory` (미지정 시 전체) |
+| `category` | enum | X | `READING_ROOM` / `STUDY_ROOM` / `PC_ROOM` / `LECTURE_ROOM` (미지정 시 전체) |
 | `keyword` | string | X | 공간명 검색어 |
 | `page` | int | X | 페이지 번호 (기본 0) |
 | `size` | int | X | 페이지 크기 (기본 20, 최대 100) |
@@ -803,15 +773,15 @@ POST /api/reservations
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
 | `seatId` | string(UUID) | O | 예약할 좌석 ID |
-| `startAt` | string(ISO8601) | O | 시작 일시 (UTC) |
-| `endAt` | string(ISO8601) | O | 종료 일시 (UTC) |
+| `startAt` | string(ISO8601 local datetime) | O | 시작 일시 (KST 기준, 오프셋 없이 전달) |
+| `endAt` | string(ISO8601 local datetime) | O | 종료 일시 (KST 기준, 오프셋 없이 전달) |
 
 **요청 예시**
 ```json
 {
   "seatId": "seat-a-12",
-  "startAt": "2026-04-22T18:00:00+09:00",
-  "endAt": "2026-04-22T13:00:00Z"
+  "startAt": "2026-04-22T09:00:00",
+  "endAt": "2026-04-22T13:00:00"
 }
 ```
 
@@ -823,11 +793,11 @@ POST /api/reservations
   "seatLabel": "A-12",
   "spaceId": "space-001",
   "spaceName": "제1열람실",
-  "startAt": "2026-04-22T18:00:00+09:00",
-  "endAt": "2026-04-22T13:00:00Z",
+  "startAt": "2026-04-22T09:00:00+09:00",
+  "endAt": "2026-04-22T13:00:00+09:00",
   "durationHours": 4,
   "status": "SCHEDULED",
-  "createdAt": "2026-04-22T08:55:00Z"
+  "createdAt": "2026-04-22T08:55:00+09:00"
 }
 ```
 
@@ -880,8 +850,8 @@ GET /api/reservations/me
       "seatLabel": "A-12",
       "spaceName": "제1열람실",
       "spaceFloor": 3,
-      "startAt": "2026-04-22T18:00:00+09:00",
-      "endAt": "2026-04-22T13:00:00Z",
+      "startAt": "2026-04-22T09:00:00+09:00",
+      "endAt": "2026-04-22T13:00:00+09:00",
       "status": "IN_USE",
       "remainingSeconds": 8130
     }
@@ -924,8 +894,8 @@ GET /api/reservations/{id}
   "spaceId": "space-001",
   "spaceName": "제1열람실",
   "spaceFloor": 3,
-  "startAt": "2026-04-22T18:00:00+09:00",
-  "endAt": "2026-04-22T22:00:00+09:00",
+  "startAt": "2026-04-22T09:00:00+09:00",
+  "endAt": "2026-04-22T13:00:00+09:00",
   "durationHours": 4,
   "status": "IN_USE",
   "remainingSeconds": 8130,
@@ -970,7 +940,7 @@ PATCH /api/reservations/{id}/extend
 ```json
 {
   "id": "rsv-abc-123",
-  "endAt": "2026-04-22T14:00:00Z",
+  "endAt": "2026-04-22T14:00:00+09:00",
   "extendedCount": 1
 }
 ```
@@ -1038,9 +1008,7 @@ GET /api/stats/me
 
 | 이름 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `period` | enum | O | `WEEKLY` / `MONTHLY` / `YEARLY` |
-| `from` | string(YYYY-MM-DD) | X | 조회 시작일 (미전달 시 기본 기간) |
-| `to` | string(YYYY-MM-DD) | X | 조회 종료일 |
+| `period` | enum | X | `WEEKLY` / `MONTHLY` / `YEARLY` (기본 `WEEKLY`) |
 
 **Response (200 OK)**
 ```json
@@ -1059,6 +1027,12 @@ GET /api/stats/me
   ]
 }
 ```
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 400 | `STAT-001` | 지원하지 않는 조회 기간 | 유효하지 않은 조회 기간입니다. |
 
 ---
 
@@ -1089,7 +1063,7 @@ GET /api/notices
       "id": "noti-001",
       "title": "도서관 이용 안내",
       "category": "INFO",
-      "publishedAt": "2026-05-18T00:00:00Z",
+      "publishedAt": "2026-05-18T09:00:00+09:00",
       "isNew": true
     }
   ],
@@ -1162,7 +1136,7 @@ POST /api/admin/spaces
 |---|---|---|---|
 | `name` | string | O | 공간명 (최대 100자) |
 | `floor` | int | O | 층수 (1 이상) |
-| `category` | enum | O | `SpaceCategory` |
+| `category` | enum | O | `READING_ROOM` / `STUDY_ROOM` / `PC_ROOM` / `LECTURE_ROOM` |
 | `openTime` | string(HH:mm:ss) | O | 운영 시작 시각 |
 | `closeTime` | string(HH:mm:ss) | O | 운영 종료 시각 |
 | `maxReservationHours` | int | O | 최대 예약 시간 (1 ~ 8) |
@@ -1355,7 +1329,7 @@ GET /api/admin/users
       "affiliation": "UNDERGRADUATE",
       "profileImageUrl": null,
       "role": "USER",
-      "createdAt": "2026-04-22T09:00:00Z"
+      "createdAt": "2026-04-22T09:00:00+09:00"
     }
   ],
   "page": 0,
@@ -1548,12 +1522,12 @@ PATCH /api/admin/seats/{id}
 ```sql
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 
-ALTER TABLE reservation ADD CONSTRAINT no_overlap
+ALTER TABLE reservations ADD CONSTRAINT no_overlap
 EXCLUDE USING gist (
   seat_id WITH =,
   tsrange(start_at, end_at, '[)') WITH &&
 )
-WHERE (status IN ('SCHEDULED','IN_USE','EXTENDED'));
+WHERE (status NOT IN ('CANCELED', 'NO_SHOW'));
 ```
 
 ### 6.2 좌석 상태 캐싱
@@ -1631,8 +1605,11 @@ WHERE (status IN ('SCHEDULED','IN_USE','EXTENDED'));
 | `RSV-013` | 400 | 최대 연장 초과 | 더 이상 연장할 수 없습니다. |
 | `RSV-021` | 403 | 본인 예약 아님 | 본인의 예약만 취소할 수 있습니다. |
 | `RSV-022` | 400 | 이미 종료됨 | 이미 종료된 예약입니다. |
+| `RSV-031` | 404 | 예약 없음 | 예약을 찾을 수 없습니다. |
 | `ADMIN-001` | 400 | 좌석 크기 초과 | 행과 열은 각각 최대 20까지 허용됩니다. |
 | `ADMIN-002` | 409 | 좌석 충돌 | 이미 좌석이 존재합니다. |
+| `NOTI-001` | 404 | 공지사항 없음 | 공지사항을 찾을 수 없습니다. |
+| `STAT-001` | 400 | 유효하지 않은 조회 기간 | 유효하지 않은 조회 기간입니다. |
 | `COMMON-100` | 400 | 입력값 검증 실패 (`@Valid`) | 입력값이 올바르지 않습니다. |
 | `COMMON-001` | 500 | 서버 오류 | 잠시 후 다시 시도해 주세요. |
 | `COMMON-002` | 503 | 일시 점검 | 서비스 점검 중입니다. |

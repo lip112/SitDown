@@ -70,7 +70,6 @@
 | 기능 ID | 기능명 | 관련 화면 | 기능 설명 |
 |---|---|---|---|
 | F-AUTH-01 | 이메일 로그인 | SCR-10, SCR-11 | 이메일과 비밀번호를 입력하여 로그인한다. 형식 검증 및 오류 메시지를 제공한다. |
-| F-AUTH-02 | 비밀번호 찾기 | SCR-11 | 등록된 이메일로 비밀번호 재설정 링크를 발송한다. |
 | F-AUTH-03 | 이메일 중복 확인 회원가입 | SCR-13, SCR-14 | 회원가입 요청 시 이메일 중복 여부를 확인하고, 이미 가입된 이메일이면 오류를 표시한다. |
 | F-AUTH-04 | 회원 정보 입력 | SCR-15 | 이름, 비밀번호, 비밀번호 확인을 입력하며 정책(길이/특수문자)을 검증한다. |
 | F-AUTH-05 | 회원가입 완료 | SCR-16 | 가입 완료 안내 후 홈으로 진입한다. |
@@ -165,11 +164,9 @@
 
 | 상태 | 전이 조건 | 설명 |
 |---|---|---|
-| `PENDING` | 예약 생성 직후 | 예약 완료 화면 노출 전의 임시 상태 |
 | `SCHEDULED` | 예약 확정, 시작 전 | 예약 예정 목록에 노출 |
-| `IN_USE` | 시작 시간 도달 | 홈 카드 및 내 예약 진행 중 탭에 노출 |
-| `EXTENDED` | IN_USE 중 연장 성공 | 종료 시간 갱신 후 IN_USE로 간주 |
-| `COMPLETED` | 종료 시간 도달 | 지난 예약 내역으로 이동 |
+| `IN_USE` | 시작 시간 도달 | 홈 카드 및 내 예약 진행 중 탭에 노출 (서버 계산 상태) |
+| `COMPLETED` | 종료 시간 도달 | 지난 예약 내역으로 이동 (서버 계산 상태) |
 | `CANCELED` | 사용자/관리자 취소 | 취소 내역 탭에 노출 |
 | `NO_SHOW` | 시작 후 일정 시간 미체크인 | 자동 취소 및 패널티 부여(옵션) |
 
@@ -220,7 +217,7 @@
 | passwordHash | String | 해시된 비밀번호 (BCrypt) |
 | name | String | 이름 |
 | phone | String | 전화번호 |
-| affiliation | String | 소속 (예: 학생) |
+| affiliation | Affiliation | 소속 (`UNDERGRADUATE` / `GRADUATE` / `FACULTY` / `ASSISTANT` / `EXTERNAL`) |
 | profileImageUrl | String? | 프로필 이미지 URL |
 | role | Enum | `USER` / `ADMIN` |
 | createdAt | LocalDateTime | 가입 일시 |
