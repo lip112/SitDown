@@ -142,4 +142,12 @@ class AuthControllerTest {
         mockMvc.perform(post("/api/auth/logout"))
                 .andExpect(status().isNoContent());
     }
+
+    @Test
+    void 비밀번호_재설정_메일_발송_API는_제공하지_않는다() throws Exception {
+        mockMvc.perform(post("/api/auth/password/reset")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"test@univ.com\"}"))
+                .andExpect(status().isNotFound());
+    }
 }

@@ -2,8 +2,10 @@ package com.univsitdown.user.service;
 
 import com.univsitdown.user.domain.Affiliation;
 import com.univsitdown.user.domain.User;
+import com.univsitdown.user.dto.ChangePasswordRequest;
 import com.univsitdown.user.dto.UpdateUserRequest;
 import com.univsitdown.user.dto.UserResponse;
+import com.univsitdown.user.exception.CurrentPasswordMismatchException;
 import com.univsitdown.user.exception.UserNotFoundException;
 import com.univsitdown.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -25,6 +28,9 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private UserService userService;
@@ -75,6 +81,29 @@ class UserServiceTest {
 
         assertThatThrownBy(() -> userService.updateUser(userId, new UpdateUserRequest("이름변경", null, null)))
                 .isInstanceOf(UserNotFoundException.class);
+    }
+
+    @Test
+    void changePassword_현재_비밀번호가_맞으면_새_비밀번호_해시로_변경한다() {
+        UUID userId = UUID.randomUUID();
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches("Old#1234", "hash")).willReturn(true);
+        given(passwordEncoder.encode("New#5678")).willReturn("new-hash");
+
+        userService.changePassword(userId, new ChangePasswordRequest("Old#1234", "New#5678"));
+
+        assertThat(user.getPasswordHash()).isEqualTo("new-hash");
+    }
+
+    @Test
+    void changePassword_현재_비밀번호가_틀리면_예외() {
+        UUID userId = UUID.randomUUID();
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+        given(passwordEncoder.matches("wrong#1234", "hash")).willReturn(false);
+
+        assertThatThrownBy(() -> userService.changePassword(userId, new ChangePasswordRequest("wrong#1234", "New#5678")))
+                .isInstanceOf(CurrentPasswordMismatchException.class);
+        then(passwordEncoder).should(never()).encode(anyString());
     }
 
     @Test

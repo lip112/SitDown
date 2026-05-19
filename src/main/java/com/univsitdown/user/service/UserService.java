@@ -2,13 +2,16 @@ package com.univsitdown.user.service;
 
 import com.univsitdown.global.response.PageResponse;
 import com.univsitdown.user.domain.User;
+import com.univsitdown.user.dto.ChangePasswordRequest;
 import com.univsitdown.user.dto.UpdateUserRequest;
 import com.univsitdown.user.dto.UserResponse;
+import com.univsitdown.user.exception.CurrentPasswordMismatchException;
 import com.univsitdown.user.exception.UserNotFoundException;
 import com.univsitdown.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +27,7 @@ import java.util.UUID;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${app.upload-dir:./uploads}")
     private String uploadDir;
@@ -46,6 +50,16 @@ public class UserService {
                 .orElseThrow(UserNotFoundException::new);
         user.update(request.name(), request.phone(), request.affiliation());
         return UserResponse.from(user);
+    }
+
+    @Transactional
+    public void changePassword(UUID userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new CurrentPasswordMismatchException();
+        }
+        user.changePassword(passwordEncoder.encode(request.newPassword()));
     }
 
     @Transactional

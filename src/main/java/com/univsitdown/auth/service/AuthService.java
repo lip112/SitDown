@@ -4,7 +4,6 @@ import com.univsitdown.auth.dto.*;
 import com.univsitdown.auth.exception.*;
 import com.univsitdown.global.security.AuthStore;
 import com.univsitdown.global.security.JwtProvider;
-import com.univsitdown.global.security.MailService;
 import com.univsitdown.user.domain.User;
 import com.univsitdown.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final AuthStore authStore;
-    private final MailService mailService;
 
     /**
      * 이메일 중복 확인 → 저장 순서를 지킨다.
@@ -83,13 +81,6 @@ public class AuthService {
 
     public void logout(UUID userId) {
         authStore.deleteRefreshTokenByUserId(userId);
-    }
-
-    public void resetPassword(String email) {
-        // 가입되지 않은 이메일이어도 200을 반환해 이메일 열거 공격을 방지한다
-        userRepository.findByEmail(email).ifPresent(user ->
-                mailService.sendPasswordReset(email, "https://univ-sitdown.com/reset?token=placeholder")
-        );
     }
 
 }

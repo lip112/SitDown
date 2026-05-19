@@ -5,8 +5,10 @@ import com.univsitdown.global.config.SecurityConfig;
 import com.univsitdown.global.security.JwtProvider;
 import com.univsitdown.global.security.UserPrincipal;
 import com.univsitdown.user.domain.UserRole;
+import com.univsitdown.user.dto.ChangePasswordRequest;
 import com.univsitdown.user.dto.UpdateUserRequest;
 import com.univsitdown.user.dto.UserResponse;
+import com.univsitdown.user.exception.CurrentPasswordMismatchException;
 import com.univsitdown.user.exception.UserNotFoundException;
 import com.univsitdown.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -102,6 +104,44 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 new UpdateUserRequest(null, "01012345678", null))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void changePassword_정상_204() throws Exception {
+        ChangePasswordRequest request = new ChangePasswordRequest("Old#1234", "New#5678");
+
+        mockMvc.perform(patch("/api/users/me/password")
+                        .header("Authorization", "Bearer " + TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNoContent());
+
+        then(userService).should().changePassword(TEST_USER_ID, request);
+    }
+
+    @Test
+    void changePassword_현재_비밀번호_불일치_401() throws Exception {
+        ChangePasswordRequest request = new ChangePasswordRequest("wrong#1234", "New#5678");
+        willThrow(new CurrentPasswordMismatchException())
+                .given(userService).changePassword(TEST_USER_ID, request);
+
+        mockMvc.perform(patch("/api/users/me/password")
+                        .header("Authorization", "Bearer " + TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTH-203"));
+    }
+
+    @Test
+    void changePassword_새_비밀번호_정책_위반_400() throws Exception {
+        ChangePasswordRequest request = new ChangePasswordRequest("Old#1234", "short");
+
+        mockMvc.perform(patch("/api/users/me/password")
+                        .header("Authorization", "Bearer " + TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
 

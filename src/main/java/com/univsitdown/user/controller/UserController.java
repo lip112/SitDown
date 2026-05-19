@@ -2,6 +2,7 @@ package com.univsitdown.user.controller;
 
 import com.univsitdown.global.security.CurrentUser;
 import com.univsitdown.global.security.UserPrincipal;
+import com.univsitdown.user.dto.ChangePasswordRequest;
 import com.univsitdown.user.dto.UpdateUserRequest;
 import com.univsitdown.user.dto.UserResponse;
 import com.univsitdown.user.service.UserService;
@@ -28,6 +29,14 @@ public class UserController {
             @CurrentUser UserPrincipal principal,
             @Valid @RequestBody UpdateUserRequest request) {
         return ResponseEntity.ok(userService.updateUser(principal.userId(), request));
+    }
+
+    @PatchMapping("/me/password")
+    public ResponseEntity<Void> changePassword(
+            @CurrentUser UserPrincipal principal,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(principal.userId(), request);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping(value = "/me/profile-image", consumes = "multipart/form-data")

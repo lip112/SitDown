@@ -10,6 +10,7 @@ public enum ErrorCode {
     EMAIL_DUPLICATED("AUTH-104", HttpStatus.CONFLICT, "이미 가입된 이메일입니다."),
     INVALID_CREDENTIALS("AUTH-201", HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."),
     ACCOUNT_LOCKED("AUTH-202", HttpStatus.LOCKED, "로그인 5회 실패로 계정이 잠겼습니다."),
+    CURRENT_PASSWORD_MISMATCH("AUTH-203", HttpStatus.UNAUTHORIZED, "현재 비밀번호가 올바르지 않습니다."),
     EXPIRED_REFRESH_TOKEN("AUTH-211", HttpStatus.UNAUTHORIZED, "다시 로그인해 주세요."),
     INVALID_REFRESH_TOKEN("AUTH-212", HttpStatus.UNAUTHORIZED, "다시 로그인해 주세요."),
 

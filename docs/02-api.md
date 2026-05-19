@@ -165,6 +165,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | USER-01 | GET | `/api/users/me` | 내 정보 조회 |
 | USER-02 | PATCH | `/api/users/me` | 내 정보 수정 |
 | USER-03 | POST | `/api/users/me/profile-image` | 프로필 사진 업로드 |
+| USER-04 | PATCH | `/api/users/me/password` | 비밀번호 변경 |
 | SPACE-01 | GET | `/api/spaces` | 공간 목록 조회 |
 | SPACE-02 | GET | `/api/spaces/{id}` | 공간 상세 조회 |
 | SPACE-03 | GET | `/api/spaces/{id}/congestion` | 혼잡도 예측 조회 |
@@ -469,6 +470,36 @@ POST /api/users/me/profile-image
 ```
 
 > 📌 **구현 참고**: 서버는 업로드 파일을 `app.upload-dir` 하위 `profiles/{userId}` 경로에 저장하고, `/uploads/profiles/{userId}/{filename}` 형식의 URL을 사용자 프로필에 저장한다.
+
+---
+
+#### [USER-04] 비밀번호 변경
+
+```
+PATCH /api/users/me/password
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 로그인한 사용자가 현재 비밀번호를 확인한 뒤 새 비밀번호로 변경한다. |
+| 인증 | Access Token |
+
+**Request Body**
+
+| 필드 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `currentPassword` | string | O | 현재 비밀번호 |
+| `newPassword` | string | O | 새 비밀번호 (8자 이상, 영문/숫자/특수문자 포함) |
+
+**Response**: `204 No Content`
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 400 | `COMMON-100` | 새 비밀번호 정책 위반 또는 입력값 검증 실패 | 입력값이 올바르지 않습니다. |
+| 401 | `AUTH-201` | Access Token 누락 또는 만료 | 인증이 필요합니다. |
+| 401 | `AUTH-203` | 현재 비밀번호 불일치 | 현재 비밀번호가 올바르지 않습니다. |
 
 ---
 
@@ -1589,6 +1620,7 @@ WHERE (status NOT IN ('CANCELED', 'NO_SHOW'));
 | `AUTH-104` | 409 | 이메일 중복 | 이미 가입된 이메일입니다. |
 | `AUTH-201` | 401 | 자격 증명 실패 | 이메일 또는 비밀번호가 올바르지 않습니다. |
 | `AUTH-202` | 423 | 계정 잠김 | 로그인 5회 실패로 계정이 잠겼습니다. |
+| `AUTH-203` | 401 | 현재 비밀번호 불일치 | 현재 비밀번호가 올바르지 않습니다. |
 | `AUTH-211` | 401 | Refresh Token 만료 | 다시 로그인해 주세요. |
 | `AUTH-212` | 401 | Refresh Token 위조 | 다시 로그인해 주세요. |
 | `USER-001` | 404 | 사용자 없음 | 사용자를 찾을 수 없습니다. |

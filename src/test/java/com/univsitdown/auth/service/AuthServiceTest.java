@@ -4,7 +4,6 @@ import com.univsitdown.auth.dto.*;
 import com.univsitdown.auth.exception.*;
 import com.univsitdown.global.security.AuthStore;
 import com.univsitdown.global.security.JwtProvider;
-import com.univsitdown.global.security.MailService;
 import com.univsitdown.user.domain.Affiliation;
 import com.univsitdown.user.domain.User;
 import com.univsitdown.user.domain.UserRole;
@@ -31,7 +30,6 @@ class AuthServiceTest {
     @Mock PasswordEncoder passwordEncoder;
     @Mock JwtProvider jwtProvider;
     @Mock AuthStore authStore;
-    @Mock MailService mailService;
     @InjectMocks AuthService authService;
 
     private User sampleUser;
@@ -74,7 +72,6 @@ class AuthServiceTest {
         assertThat(response.email()).isEqualTo("new@univ.com");
         assertThat(response.available()).isTrue();
         then(authStore).shouldHaveNoInteractions();
-        then(mailService).shouldHaveNoInteractions();
     }
 
     @Test
@@ -84,7 +81,6 @@ class AuthServiceTest {
         assertThatThrownBy(() -> authService.checkEmail("test@univ.com"))
                 .isInstanceOf(EmailDuplicatedException.class);
         then(authStore).shouldHaveNoInteractions();
-        then(mailService).shouldHaveNoInteractions();
     }
 
     @Test
