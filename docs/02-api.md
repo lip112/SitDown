@@ -640,6 +640,54 @@ GET /api/spaces/{id}/congestion
 
 ---
 
+#### [SPACE-04] 즐겨찾기 추가
+
+```
+POST /api/spaces/{id}/favorite
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 현재 사용자의 즐겨찾기 공간에 지정 공간을 추가한다. 이미 추가된 공간이면 성공으로 처리한다. |
+| 인증 | Access Token |
+
+**Path Parameters**
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `id` | string(UUID) | O | 공간 ID |
+
+**Response**: `204 No Content`
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 404 | `SPACE-001` | 공간 없음 | 공간을 찾을 수 없습니다. |
+
+---
+
+#### [SPACE-05] 즐겨찾기 해제
+
+```
+DELETE /api/spaces/{id}/favorite
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 현재 사용자의 즐겨찾기 공간에서 지정 공간을 제거한다. 즐겨찾기 상태가 아니어도 성공으로 처리한다. |
+| 인증 | Access Token |
+
+**Path Parameters**
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `id` | string(UUID) | O | 공간 ID |
+
+**Response**: `204 No Content`
+
+---
+
 ### 5.4 좌석 (SEAT)
 
 ---
@@ -687,6 +735,51 @@ GET /api/spaces/{id}/seats
 ```
 
 > 📌 **구현 참고**: 좌석 상태는 실시간성이 중요하므로 Redis 캐시 TTL을 짧게(10초 이내) 설정하거나 캐시 생략. 예약 생성/취소 시 해당 공간 캐시를 즉시 무효화.
+
+---
+
+#### [SEAT-02] 좌석 상세 조회
+
+```
+GET /api/seats/{id}
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 특정 좌석의 위치, 상태, 소속 공간 정보를 조회한다. |
+| 인증 | Access Token |
+
+**Path Parameters**
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `id` | string(UUID) | O | 좌석 ID |
+
+**Query Parameters**
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `at` | string(ISO8601) | X | 기준 시각 (미전달 시 현재) |
+
+**Response (200 OK)**
+```json
+{
+  "id": "seat-a-12",
+  "label": "A-12",
+  "row": 1,
+  "column": 2,
+  "status": "AVAILABLE",
+  "features": ["콘센트", "창가"],
+  "spaceId": "space-001",
+  "spaceName": "제1열람실"
+}
+```
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 404 | `SEAT-001` | 좌석 없음 | 좌석을 찾을 수 없습니다. |
 
 ---
 
@@ -802,6 +895,51 @@ GET /api/reservations/me
 ```
 
 > 📌 **구현 참고**: `remainingSeconds`는 `IN_USE` 상태일 때만 의미가 있으며, 서버 시간 기준으로 계산. 클라이언트는 이 값을 초기값으로 받아 로컬 타이머를 돌린다.
+
+---
+
+#### [RSV-03] 예약 상세 조회
+
+```
+GET /api/reservations/{id}
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 현재 사용자의 특정 예약 상세 정보를 조회한다. 본인 예약이 아니면 실패한다. |
+| 인증 | Access Token |
+
+**Path Parameters**
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `id` | string(UUID) | O | 예약 ID |
+
+**Response (200 OK)**
+```json
+{
+  "id": "rsv-abc-123",
+  "seatId": "seat-a-12",
+  "seatLabel": "A-12",
+  "spaceId": "space-001",
+  "spaceName": "제1열람실",
+  "spaceFloor": 3,
+  "startAt": "2026-04-22T18:00:00+09:00",
+  "endAt": "2026-04-22T22:00:00+09:00",
+  "durationHours": 4,
+  "status": "IN_USE",
+  "remainingSeconds": 8130,
+  "extendedCount": 0,
+  "createdAt": "2026-04-22T08:55:00+09:00"
+}
+```
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 403 | `RSV-021` | 본인 예약 아님 | 본인의 예약만 취소할 수 있습니다. |
+| 404 | `RSV-031` | 예약 없음 | 예약을 찾을 수 없습니다. |
 
 ---
 
@@ -965,9 +1103,98 @@ GET /api/notices
 
 ---
 
+#### [NOTI-02] 공지사항 상세 조회
+
+```
+GET /api/notices/{id}
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 활성 상태인 공지사항의 상세 내용을 조회한다. |
+| 인증 | Access Token |
+
+**Path Parameters**
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `id` | string(UUID) | O | 공지사항 ID |
+
+**Response (200 OK)**
+```json
+{
+  "id": "noti-001",
+  "title": "도서관 이용 안내",
+  "content": "열람실 이용 시 음식을 반입을 금지합니다.",
+  "category": "INFO",
+  "publishedAt": "2026-05-18T09:00:00+09:00"
+}
+```
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 404 | `NOTI-001` | 공지사항 없음 또는 비활성 상태 | 공지사항을 찾을 수 없습니다. |
+
+---
+
 ### 5.7 관리자 (ADMIN)
 
 이하 API는 `role=ADMIN` 권한을 가진 사용자만 호출 가능. 일반 사용자 호출 시 `403 Forbidden` 반환.
+
+---
+
+#### [ADMIN-01] 공간 생성
+
+```
+POST /api/admin/spaces
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 공간명, 층, 카테고리, 운영 시간, 최대 예약 시간을 입력해 새 공간을 생성한다. |
+| 인증 | Access Token (ADMIN) |
+
+**Request Body**
+
+| 필드 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `name` | string | O | 공간명 (최대 100자) |
+| `floor` | int | O | 층수 (1 이상) |
+| `category` | enum | O | `SpaceCategory` |
+| `openTime` | string(HH:mm:ss) | O | 운영 시작 시각 |
+| `closeTime` | string(HH:mm:ss) | O | 운영 종료 시각 |
+| `maxReservationHours` | int | O | 최대 예약 시간 (1 ~ 8) |
+| `features` | string[] | X | 공간 편의 기능 목록 |
+| `thumbnailUrl` | string | X | 대표 이미지 URL |
+
+**Response (201 Created)**
+```json
+{
+  "id": "space-001",
+  "name": "제1열람실",
+  "floor": 3,
+  "category": "READING_ROOM",
+  "totalSeats": 0,
+  "availableSeats": 0,
+  "rows": 0,
+  "columns": 0,
+  "congestion": "LOW",
+  "openTime": "06:00:00",
+  "closeTime": "22:00:00",
+  "maxReservationHours": 4,
+  "features": ["콘센트", "조용함"],
+  "images": [],
+  "isFavorite": false
+}
+```
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 400 | `COMMON-100` | 입력값 검증 실패 | 입력값이 올바르지 않습니다. |
 
 ---
 
@@ -1267,6 +1494,40 @@ POST /api/admin/spaces/{id}/seats/grid
 | 409 | `ADMIN-002` | 기존 좌석 충돌 | 이미 좌석이 존재합니다. `overwrite=true`로 재생성하세요. |
 
 > 📌 **구현 참고**: label 생성 규칙은 `{labelPrefix}-{순번}` 형식으로 일관되게. Batch insert로 한 번에 처리 (`JdbcTemplate` 배치 또는 `JPA saveAll` 주의).
+
+---
+
+#### [ADMIN-03] 좌석 상태 변경
+
+```
+PATCH /api/admin/seats/{id}
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 좌석을 사용 가능 또는 사용 불가 상태로 변경한다. 비활성화된 좌석은 좌석 조회에서 `UNAVAILABLE`로 반환된다. |
+| 인증 | Access Token (ADMIN) |
+
+**Path Parameters**
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `id` | string(UUID) | O | 좌석 ID |
+
+**Request Body**
+
+| 필드 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `isEnabled` | boolean | O | `true`면 사용 가능, `false`면 사용 불가 |
+
+**Response**: `200 OK`
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 400 | `COMMON-100` | 입력값 검증 실패 | 입력값이 올바르지 않습니다. |
+| 404 | `SEAT-001` | 좌석 없음 | 좌석을 찾을 수 없습니다. |
 
 ---
 
