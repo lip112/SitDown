@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 public final class DateTimeUtils {
 
     private static final DateTimeFormatter KST_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'+09:00'");
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private DateTimeUtils() {}
 

@@ -38,8 +38,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 #### 날짜/시간 포맷
-- 모든 날짜·시간은 ISO 8601 KST 형식 (예: `2026-04-22T18:00:00+09:00`)
-- 서버가 KST(`+09:00`) 오프셋을 포함하여 반환하므로 클라이언트 별도 변환 불필요
+- 응답 날짜·시간은 KST 기준 `yyyy-MM-dd HH:mm:ss` 형식 (예: `2026-04-22 18:00:00`)
+- 요청 날짜·시간은 각 API의 필드 설명을 따른다. 예를 들어 예약 `startAt`, `endAt`은 KST 기준 오프셋 없는 local datetime으로 전달한다.
 - 운영 종료 시각 `closeTime`이 `00:00:00`이면 운영일의 자정 종료를 의미한다. 예를 들어 `06:00:00-00:00:00` 공간은 같은 날 `23:42:00` 종료 예약과 다음날 `00:00:00` 종료 예약을 운영 시간 내로 본다.
 
 #### 페이지네이션
@@ -80,7 +80,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 {
   "code": "SEAT-002",
   "message": "이미 예약된 좌석입니다.",
-  "timestamp": "2026-04-22T18:00:00+09:00",
+  "timestamp": "2026-04-22 18:00:00",
   "traceId": "abc-123-def-456",
   "path": "/api/reservations"
 }
@@ -239,7 +239,7 @@ POST /api/auth/signup
   "userId": "a3f9b2c1-...",
   "email": "student@univ.com",
   "name": "김학생",
-  "createdAt": "2026-04-22T18:00:00+09:00"
+  "createdAt": "2026-04-22 18:00:00"
 }
 ```
 
@@ -405,7 +405,7 @@ GET /api/users/me
   "affiliation": "UNDERGRADUATE",
   "profileImageUrl": "/uploads/profiles/a3f9b2c1-.../a3f9b2c1-..._4f2d9c.jpg",
   "role": "USER",
-  "createdAt": "2025-03-01T09:00:00+09:00"
+  "createdAt": "2025-03-01 09:00:00"
 }
 ```
 
@@ -465,7 +465,7 @@ POST /api/users/me/profile-image
   "affiliation": "UNDERGRADUATE",
   "profileImageUrl": "/uploads/profiles/a3f9b2c1-.../a3f9b2c1-..._4f2d9c.jpg",
   "role": "USER",
-  "createdAt": "2025-03-01T09:00:00+09:00"
+  "createdAt": "2025-03-01 09:00:00"
 }
 ```
 
@@ -801,11 +801,11 @@ POST /api/reservations
   "seatLabel": "A-12",
   "spaceId": "space-001",
   "spaceName": "제1열람실",
-  "startAt": "2026-04-22T09:00:00+09:00",
-  "endAt": "2026-04-22T13:00:00+09:00",
+  "startAt": "2026-04-22 09:00:00",
+  "endAt": "2026-04-22 13:00:00",
   "durationHours": 4,
   "status": "SCHEDULED",
-  "createdAt": "2026-04-22T08:55:00+09:00"
+  "createdAt": "2026-04-22 08:55:00"
 }
 ```
 
@@ -858,8 +858,8 @@ GET /api/reservations/me
       "seatLabel": "A-12",
       "spaceName": "제1열람실",
       "spaceFloor": 3,
-      "startAt": "2026-04-22T09:00:00+09:00",
-      "endAt": "2026-04-22T13:00:00+09:00",
+      "startAt": "2026-04-22 09:00:00",
+      "endAt": "2026-04-22 13:00:00",
       "status": "IN_USE",
       "remainingSeconds": 8130
     }
@@ -902,13 +902,13 @@ GET /api/reservations/{id}
   "spaceId": "space-001",
   "spaceName": "제1열람실",
   "spaceFloor": 3,
-  "startAt": "2026-04-22T09:00:00+09:00",
-  "endAt": "2026-04-22T13:00:00+09:00",
+  "startAt": "2026-04-22 09:00:00",
+  "endAt": "2026-04-22 13:00:00",
   "durationHours": 4,
   "status": "IN_USE",
   "remainingSeconds": 8130,
   "extendedCount": 0,
-  "createdAt": "2026-04-22T08:55:00+09:00"
+  "createdAt": "2026-04-22 08:55:00"
 }
 ```
 
@@ -948,7 +948,7 @@ PATCH /api/reservations/{id}/extend
 ```json
 {
   "id": "rsv-abc-123",
-  "endAt": "2026-04-22T14:00:00+09:00",
+  "endAt": "2026-04-22 14:00:00",
   "extendedCount": 1
 }
 ```
@@ -1071,7 +1071,7 @@ GET /api/notices
       "id": "noti-001",
       "title": "도서관 이용 안내",
       "category": "INFO",
-      "publishedAt": "2026-05-18T09:00:00+09:00",
+      "publishedAt": "2026-05-18 09:00:00",
       "isNew": true
     }
   ],
@@ -1109,7 +1109,7 @@ GET /api/notices/{id}
   "title": "도서관 이용 안내",
   "content": "열람실 이용 시 음식을 반입을 금지합니다.",
   "category": "INFO",
-  "publishedAt": "2026-05-18T09:00:00+09:00"
+  "publishedAt": "2026-05-18 09:00:00"
 }
 ```
 
@@ -1229,7 +1229,7 @@ POST /api/admin/notices
   "title": "도서관 이용 안내",
   "content": "열람실 이용 시 음식을 반입을 금지합니다.",
   "category": "INFO",
-  "publishedAt": "2026-05-14T09:00:00+09:00"
+  "publishedAt": "2026-05-14 09:00:00"
 }
 ```
 
@@ -1269,7 +1269,7 @@ PATCH /api/admin/notices/{id}
   "title": "수정된 공지",
   "content": "수정된 내용입니다.",
   "category": "EVENT",
-  "publishedAt": "2026-05-14T09:00:00+09:00"
+  "publishedAt": "2026-05-14 09:00:00"
 }
 ```
 
@@ -1337,7 +1337,7 @@ GET /api/admin/users
       "affiliation": "UNDERGRADUATE",
       "profileImageUrl": null,
       "role": "USER",
-      "createdAt": "2026-04-22T09:00:00+09:00"
+      "createdAt": "2026-04-22 09:00:00"
     }
   ],
   "page": 0,

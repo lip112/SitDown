@@ -98,6 +98,7 @@ class NoticeServiceTest {
         ));
 
         assertThat(response.title()).isEqualTo("공지 제목");
+        assertThat(response.publishedAt()).isEqualTo("2026-05-14 09:00:00");
         then(noticeRepository).should().save(any(Notice.class));
     }
 

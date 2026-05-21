@@ -39,7 +39,7 @@ class AdminUserControllerTest {
     private static final UUID USER_ID = UUID.randomUUID();
     private static final UserResponse SAMPLE_RESPONSE = new UserResponse(
             USER_ID.toString(), "test@univ.com", "김학생",
-            "010-1234-5678", "UNDERGRADUATE", null, "USER", "2026-04-22T09:00:00Z"
+            "010-1234-5678", "UNDERGRADUATE", null, "USER", "2026-04-22 09:00:00"
     );
 
     @Test
@@ -70,7 +70,7 @@ class AdminUserControllerTest {
     void updateUser_회원정보수정_200() throws Exception {
         UserResponse updated = new UserResponse(
                 USER_ID.toString(), "test@univ.com", "이름변경",
-                "010-1234-5678", "UNDERGRADUATE", null, "USER", "2026-04-22T09:00:00Z"
+                "010-1234-5678", "UNDERGRADUATE", null, "USER", "2026-04-22 09:00:00"
         );
         given(userService.updateUser(eq(USER_ID), any(UpdateUserRequest.class))).willReturn(updated);
 

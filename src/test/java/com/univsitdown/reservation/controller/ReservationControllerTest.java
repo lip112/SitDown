@@ -50,7 +50,7 @@ class ReservationControllerTest {
     void reserve_201() throws Exception {
         CreateReservationResponse response = new CreateReservationResponse(
                 RSV_ID, SEAT_ID, "A-1", UUID.randomUUID().toString(), "제1열람실",
-                "2026-05-01T09:00:00Z", "2026-05-01T11:00:00Z", 2, "SCHEDULED", "2026-05-01T08:55:00Z"
+                "2026-05-01 09:00:00", "2026-05-01 11:00:00", 2, "SCHEDULED", "2026-05-01 08:55:00"
         );
         given(reservationService.reserve(any(), any())).willReturn(response);
 
@@ -87,7 +87,7 @@ class ReservationControllerTest {
     void getMyReservations_200() throws Exception {
         ReservationListItemResponse item = new ReservationListItemResponse(
                 RSV_ID, "A-1", "제1열람실", 3,
-                "2026-05-01T09:00:00Z", "2026-05-01T11:00:00Z", "SCHEDULED", null
+                "2026-05-01 09:00:00", "2026-05-01 11:00:00", "SCHEDULED", null
         );
         given(reservationService.getMyReservations(any(), any(), any()))
                 .willReturn(new PageResponse<>(List.of(item), 0, 20, 1, 1, false));
@@ -103,7 +103,7 @@ class ReservationControllerTest {
         UUID rsvId = UUID.randomUUID();
         ReservationDetailResponse response = new ReservationDetailResponse(
                 rsvId.toString(), SEAT_ID, "A-1", UUID.randomUUID().toString(), "제1열람실", 3,
-                "2026-05-01T09:00:00Z", "2026-05-01T11:00:00Z", 2, "SCHEDULED", null, 0, "2026-05-01T08:55:00Z"
+                "2026-05-01 09:00:00", "2026-05-01 11:00:00", 2, "SCHEDULED", null, 0, "2026-05-01 08:55:00"
         );
         given(reservationService.getReservation(any(), any())).willReturn(response);
 
@@ -126,7 +126,7 @@ class ReservationControllerTest {
     @Test
     void extend_200() throws Exception {
         UUID rsvId = UUID.randomUUID();
-        ExtendReservationResponse response = new ExtendReservationResponse(rsvId.toString(), "2026-05-01T12:00:00Z", 1);
+        ExtendReservationResponse response = new ExtendReservationResponse(rsvId.toString(), "2026-05-01 12:00:00", 1);
         given(reservationService.extend(any(), any(), any(Integer.class))).willReturn(response);
 
         mockMvc.perform(patch("/api/reservations/{id}/extend", rsvId)

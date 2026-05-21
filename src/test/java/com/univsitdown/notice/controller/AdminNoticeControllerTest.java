@@ -47,7 +47,7 @@ class AdminNoticeControllerTest {
             "공지 제목",
             "공지 내용",
             "INFO",
-            "2026-05-14T09:00:00+09:00"
+            "2026-05-14 09:00:00"
     );
 
     @Test
@@ -95,7 +95,7 @@ class AdminNoticeControllerTest {
                 "수정 제목",
                 "공지 내용",
                 "EVENT",
-                "2026-05-14T09:00:00+09:00"
+                "2026-05-14 09:00:00"
         );
         given(noticeService.updateNotice(eq(NOTICE_ID), any())).willReturn(updated);
         UpdateNoticeRequest request = new UpdateNoticeRequest("수정 제목", null, NoticeCategory.EVENT, null, null);
