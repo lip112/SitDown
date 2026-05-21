@@ -403,7 +403,7 @@ GET /api/users/me
   "name": "김학생",
   "phone": "010-1234-5678",
   "affiliation": "UNDERGRADUATE",
-  "profileImageUrl": "https://cdn.univ-sitdown.com/profile/a3f9.jpg",
+  "profileImageUrl": "/uploads/profiles/a3f9b2c1-.../a3f9b2c1-..._4f2d9c.jpg",
   "role": "USER",
   "createdAt": "2025-03-01T09:00:00+09:00"
 }
@@ -452,7 +452,7 @@ POST /api/users/me/profile-image
 
 | 이름 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `file` | file | O | 업로드할 프로필 이미지 파일 |
+| `file` | file | O | 업로드할 프로필 이미지 파일 (`jpg`, `png`, `webp`) |
 
 **Response (200 OK)**: 갱신된 사용자 정보 (USER-01과 동일 포맷)
 
@@ -469,7 +469,14 @@ POST /api/users/me/profile-image
 }
 ```
 
-> 📌 **구현 참고**: 서버는 업로드 파일을 `app.upload-dir` 하위 `profiles/{userId}` 경로에 저장하고, `/uploads/profiles/{userId}/{filename}` 형식의 URL을 사용자 프로필에 저장한다.
+> 📌 **구현 참고**: 서버는 업로드 파일을 `app.upload-dir` 하위 `profiles/{userId}` 경로에 저장하고, `/uploads/profiles/{userId}/{filename}` 형식의 URL을 사용자 프로필에 저장한다. 확장자나 `Content-Type`만 믿지 않고 파일 시그니처를 검사하여 JPEG, PNG, WebP만 허용한다.
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
+| 400 | `USER-002` | 이미지 파일이 아니거나 지원하지 않는 형식 | 이미지 파일만 업로드할 수 있습니다. |
+| 401 | `AUTH-201` | 인증 토큰 없음/만료/위조 | 인증이 필요합니다. |
 
 ---
 
@@ -1593,6 +1600,7 @@ WHERE (status NOT IN ('CANCELED', 'NO_SHOW'));
 | `AUTH-211` | 401 | Refresh Token 만료 | 다시 로그인해 주세요. |
 | `AUTH-212` | 401 | Refresh Token 위조 | 다시 로그인해 주세요. |
 | `USER-001` | 404 | 사용자 없음 | 사용자를 찾을 수 없습니다. |
+| `USER-002` | 400 | 프로필 이미지 형식 오류 | 이미지 파일만 업로드할 수 있습니다. |
 | `SPACE-001` | 404 | 공간 없음 | 공간을 찾을 수 없습니다. |
 | `SEAT-001` | 404 | 좌석 없음 | 좌석을 찾을 수 없습니다. |
 | `SEAT-002` | 409 | 좌석 비활성화 | 현재 이용할 수 없는 좌석입니다. |

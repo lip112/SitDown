@@ -8,8 +8,9 @@
 
 ```text
 client
-  -> nginx:80
+      -> nginx:80
       -> /api/**          -> backend:8080
+      -> /uploads/**      -> backend:8080
       -> /api-docs        -> backend:8080
       -> /api-docs/       -> backend:8080/api-docs
       -> /swagger-ui/**   -> backend:8080
@@ -53,8 +54,11 @@ services:
       REDIS_HOST: 127.0.0.1
       REDIS_PORT: 6379
       MANAGEMENT_HEALTH_REDIS_ENABLED: false
+      APP_UPLOAD_DIR: /app/uploads
     expose:
       - "8080"
+    volumes:
+      - uploads_data:/app/uploads
     networks:
       - sitdown
     restart: unless-stopped
@@ -90,6 +94,7 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
 
 networks:
   sitdown:
@@ -154,6 +159,14 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
+    location /uploads/ {
+        proxy_pass http://backend:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
     location / {
         proxy_pass http://frontend:3000;
         proxy_set_header Host $host;
@@ -165,6 +178,8 @@ server {
 ```
 
 `/api-docs`와 `/api-docs/`를 모두 처리하는 이유는 브라우저나 Swagger UI 캐시가 trailing slash가 붙은 주소를 요청할 수 있기 때문이다. 백엔드 springdoc의 실제 문서 경로는 `/api-docs`다.
+
+업로드 파일은 `/uploads/**` 경로로 공개 조회된다. Nginx가 이 경로를 프론트엔드로 보내면 `200 OK`여도 HTML이 내려와 이미지가 깨지므로, `location /uploads/`는 `location /`보다 위에 둔다. 백엔드 컨테이너 재생성 후에도 파일이 유지되도록 `APP_UPLOAD_DIR`와 `uploads_data` 볼륨을 함께 설정한다.
 
 ## 4. 환경변수
 
@@ -200,6 +215,7 @@ docker exec sitdown-nginx nginx -s reload
 
 ```bash
 curl -i http://sitdown.bond/api/health
+curl -i http://sitdown.bond/uploads/profiles/{userId}/{filename}
 curl -i http://sitdown.bond/api-docs
 curl -i http://sitdown.bond/api-docs/
 curl -i http://sitdown.bond/swagger-ui/index.html
@@ -210,6 +226,7 @@ curl -i http://sitdown.bond/swagger-ui/index.html
 | URL | 기대 상태 |
 |---|---|
 | `/api/health` | `200`, JSON |
+| `/uploads/profiles/{userId}/{filename}` | `200`, 이미지 파일 또는 파일이 없으면 `404` |
 | `/api-docs` | `200`, OpenAPI JSON |
 | `/api-docs/` | `200`, OpenAPI JSON |
 | `/swagger-ui/index.html` | `200`, Swagger UI HTML |
@@ -248,3 +265,15 @@ docker inspect sitdown-backend | grep -A2 CORS_ALLOWED_ORIGINS
 ### `http://sitdown.bond/swagger-ui/index.html`이 프론트 화면을 반환
 
 80번 포트가 Nginx가 아니라 프론트 컨테이너에 직접 매핑된 상태다. `frontend`의 `80:3000` 매핑을 제거하고 Nginx만 `80:80`을 사용하게 한다.
+
+### 업로드 이미지가 깨져 보임
+
+응답이 이미지인지 먼저 확인한다.
+
+```bash
+curl -s -D /tmp/headers.txt -o /tmp/profile.jpg http://sitdown.bond/uploads/profiles/{userId}/{filename}
+cat /tmp/headers.txt
+file /tmp/profile.jpg
+```
+
+`file` 결과가 `HTML document text`이면 Nginx가 `/uploads/`를 프론트엔드로 보내고 있는 것이다. `docker exec sitdown-nginx nginx -T | grep -A12 "location /uploads"`로 실제 적용 설정을 확인하고, 설정 변경 후 `nginx -t`, `nginx -s reload`를 실행한다.

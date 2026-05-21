@@ -45,10 +45,11 @@ open http://localhost:8080/swagger-ui.html
 |---|---|
 | `http://sitdown.bond/` | 프론트엔드 |
 | `http://sitdown.bond/api/**` | 백엔드 API |
+| `http://sitdown.bond/uploads/**` | 업로드 이미지 |
 | `http://sitdown.bond/swagger-ui/index.html` | Swagger UI |
 | `http://sitdown.bond/api-docs` | OpenAPI JSON |
 
-Nginx는 `/api/**`, `/api-docs`, `/api-docs/`, `/swagger-ui/**`, `/swagger-ui.html`을 백엔드(`backend:8080`)로 보내고, 나머지는 프론트엔드(`frontend:3000`)로 보낸다. 자세한 설정과 장애 대응은 `docs/04-deployment.md`를 참조한다.
+Nginx는 `/api/**`, `/uploads/**`, `/api-docs`, `/api-docs/`, `/swagger-ui/**`, `/swagger-ui.html`을 백엔드(`backend:8080`)로 보내고, 나머지는 프론트엔드(`frontend:3000`)로 보낸다. 자세한 설정과 장애 대응은 `docs/04-deployment.md`를 참조한다.
 
 운영 CORS는 `application.yml` 기본값보다 `CORS_ALLOWED_ORIGINS` 환경변수가 우선한다. Docker Compose의 `.env`에 운영 도메인을 포함해야 한다.
 

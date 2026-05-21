@@ -15,6 +15,7 @@ public enum ErrorCode {
 
     // USER
     USER_NOT_FOUND("USER-001", HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
+    INVALID_PROFILE_IMAGE("USER-002", HttpStatus.BAD_REQUEST, "이미지 파일만 업로드할 수 있습니다."),
 
     // SPACE
     SPACE_NOT_FOUND("SPACE-001", HttpStatus.NOT_FOUND, "공간을 찾을 수 없습니다."),

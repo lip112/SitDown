@@ -1,5 +1,6 @@
 package com.univsitdown.user.service;
 
+import com.univsitdown.global.exception.BusinessException;
 import com.univsitdown.user.domain.Affiliation;
 import com.univsitdown.user.domain.User;
 import com.univsitdown.user.dto.UpdateUserRequest;
@@ -9,11 +10,15 @@ import com.univsitdown.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.data.domain.PageRequest;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,11 +34,15 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
+    @TempDir
+    private Path tempDir;
+
     private User user;
 
     @BeforeEach
     void setUp() {
         user = User.create("test@univ.com", "hash", "김학생", "010-1234-5678", Affiliation.UNDERGRADUATE);
+        ReflectionTestUtils.setField(userService, "uploadDir", tempDir.toString());
     }
 
     @Test
@@ -108,5 +117,17 @@ class UserServiceTest {
         assertThatThrownBy(() -> userService.deleteUser(userId))
                 .isInstanceOf(UserNotFoundException.class);
         then(userRepository).should(never()).delete(any());
+    }
+
+    @Test
+    void updateProfileImage_이미지파일이_아니면_BusinessException() {
+        UUID userId = UUID.randomUUID();
+        MockMultipartFile htmlFile = new MockMultipartFile(
+                "file", "profile.jpg", "image/jpeg", "<!DOCTYPE html><html></html>".getBytes());
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+        assertThatThrownBy(() -> userService.updateProfileImage(userId, htmlFile))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("이미지 파일만 업로드할 수 있습니다.");
     }
 }
