@@ -58,6 +58,7 @@ public class SecurityConfig {
                                 "/api-docs/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET,
+                                "/uploads/**",
                                 "/api/spaces",
                                 "/api/spaces/*",
                                 "/api/spaces/*/congestion",

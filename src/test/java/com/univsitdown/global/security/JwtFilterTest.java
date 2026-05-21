@@ -50,4 +50,10 @@ class JwtFilterTest {
         mockMvc.perform(get("/api/health"))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    void 토큰_없이_업로드_이미지_경로_접근_허용() throws Exception {
+        mockMvc.perform(get("/uploads/profiles/test/file.jpg"))
+                .andExpect(status().isNotFound());
+    }
 }
