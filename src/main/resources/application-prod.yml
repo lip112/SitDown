@@ -13,5 +13,5 @@ spring:
 
 logging:
   level:
-    com.univsitdown: WARN
     root: WARN
+    com.univsitdown: INFO
