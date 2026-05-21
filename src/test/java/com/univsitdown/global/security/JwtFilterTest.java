@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 
 import javax.sql.DataSource;
@@ -55,5 +56,13 @@ class JwtFilterTest {
     void 토큰_없이_업로드_이미지_경로_접근_허용() throws Exception {
         mockMvc.perform(get("/uploads/profiles/test/file.jpg"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void 업로드_이미지_경로에_CORS_헤더를_포함한다() throws Exception {
+        mockMvc.perform(get("/uploads/profiles/test/file.jpg")
+                        .header(HttpHeaders.ORIGIN, "http://localhost:3000"))
+                .andExpect(status().isNotFound())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*"));
     }
 }
