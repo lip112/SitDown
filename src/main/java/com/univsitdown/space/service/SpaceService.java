@@ -56,9 +56,11 @@ public class SpaceService {
                 .orElseThrow(SpaceNotFoundException::new);
         LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
         int total = (int) seatRepository.countBySpaceIdAndIsEnabledTrue(id);
+        int rows = seatRepository.findMaxRowBySpaceId(id);
+        int columns = seatRepository.findMaxColBySpaceId(id);
         int occupied = (int) reservationRepository.countOccupiedBySpaceId(id, now);
         boolean isFav = userId != null && favoriteService.isFavorite(userId, id);
-        return SpaceDetailResponse.from(space, total, total - occupied, isFav);
+        return SpaceDetailResponse.from(space, total, total - occupied, rows, columns, isFav);
     }
 
     @Transactional(readOnly = true)

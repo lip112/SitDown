@@ -26,6 +26,11 @@ public record SpaceDetailResponse(
     }
 
     public static SpaceDetailResponse from(Space space, int totalSeats, int availableSeats, boolean isFavorite) {
+        return from(space, totalSeats, availableSeats, 0, 0, isFavorite);
+    }
+
+    public static SpaceDetailResponse from(Space space, int totalSeats, int availableSeats,
+                                           int rows, int columns, boolean isFavorite) {
         return new SpaceDetailResponse(
                 space.getId() != null ? space.getId().toString() : null,
                 space.getName(),
@@ -33,20 +38,25 @@ public record SpaceDetailResponse(
                 space.getCategory().name(),
                 totalSeats,
                 availableSeats,
-                0,
-                0,
+                rows,
+                columns,
                 computeCongestion(totalSeats, availableSeats),
                 space.getOpenTime().toString(),
                 space.getCloseTime().toString(),
                 space.getMaxReservationHours(),
                 space.getFeatures(),
-                List.of(),
+                imagesOf(space),
                 isFavorite
         );
     }
 
     public static SpaceDetailResponse from(Space space, int totalSeats, int availableSeats) {
         return from(space, totalSeats, availableSeats, false);
+    }
+
+    private static List<String> imagesOf(Space space) {
+        String thumbnailUrl = space.getThumbnailUrl();
+        return thumbnailUrl == null || thumbnailUrl.isBlank() ? List.of() : List.of(thumbnailUrl);
     }
 
     private static String computeCongestion(int totalSeats, int availableSeats) {

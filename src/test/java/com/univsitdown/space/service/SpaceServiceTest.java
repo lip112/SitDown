@@ -39,9 +39,13 @@ class SpaceServiceTest {
     @InjectMocks SpaceService spaceService;
 
     private Space sampleSpace() {
+        return sampleSpace(null);
+    }
+
+    private Space sampleSpace(String thumbnailUrl) {
         Space space = Space.create("제1열람실", 3, SpaceCategory.READING_ROOM,
                 LocalTime.of(6, 0), LocalTime.of(22, 0), 4,
-                List.of("콘센트", "조용함"), null);
+                List.of("콘센트", "조용함"), thumbnailUrl);
         ReflectionTestUtils.setField(space, "id", UUID.randomUUID());
         return space;
     }
@@ -109,6 +113,8 @@ class SpaceServiceTest {
         ReflectionTestUtils.setField(space, "id", id);
         given(spaceRepository.findById(id)).willReturn(Optional.of(space));
         given(seatRepository.countBySpaceIdAndIsEnabledTrue(id)).willReturn(20L);
+        given(seatRepository.findMaxRowBySpaceId(id)).willReturn(4);
+        given(seatRepository.findMaxColBySpaceId(id)).willReturn(5);
         given(reservationRepository.countOccupiedBySpaceId(eq(id), any())).willReturn(5L);
 
         SpaceDetailResponse response = spaceService.getSpace(id, null);
@@ -116,7 +122,26 @@ class SpaceServiceTest {
         assertThat(response.name()).isEqualTo("제1열람실");
         assertThat(response.totalSeats()).isEqualTo(20);
         assertThat(response.availableSeats()).isEqualTo(15);
+        assertThat(response.rows()).isEqualTo(4);
+        assertThat(response.columns()).isEqualTo(5);
         assertThat(response.congestion()).isEqualTo("LOW"); // 5/20 = 25%
+    }
+
+    @Test
+    void getSpace_thumbnailUrl이_있으면_images에_포함() {
+        UUID id = UUID.randomUUID();
+        String thumbnailUrl = "https://cdn.example.com/spaces/001.jpg";
+        Space space = sampleSpace(thumbnailUrl);
+        ReflectionTestUtils.setField(space, "id", id);
+        given(spaceRepository.findById(id)).willReturn(Optional.of(space));
+        given(seatRepository.countBySpaceIdAndIsEnabledTrue(id)).willReturn(0L);
+        given(seatRepository.findMaxRowBySpaceId(id)).willReturn(0);
+        given(seatRepository.findMaxColBySpaceId(id)).willReturn(0);
+        given(reservationRepository.countOccupiedBySpaceId(eq(id), any())).willReturn(0L);
+
+        SpaceDetailResponse response = spaceService.getSpace(id, null);
+
+        assertThat(response.images()).containsExactly(thumbnailUrl);
     }
 
     @Test

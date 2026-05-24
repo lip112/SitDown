@@ -21,6 +21,12 @@ public interface SeatRepository extends JpaRepository<Seat, UUID> {
 
     long countBySpaceIdAndIsEnabledTrue(UUID spaceId);
 
+    @Query("SELECT COALESCE(MAX(s.rowNum), 0) FROM Seat s WHERE s.space.id = :spaceId")
+    int findMaxRowBySpaceId(@Param("spaceId") UUID spaceId);
+
+    @Query("SELECT COALESCE(MAX(s.colNum), 0) FROM Seat s WHERE s.space.id = :spaceId")
+    int findMaxColBySpaceId(@Param("spaceId") UUID spaceId);
+
     // 예약 생성 시 row-level 비관적 락 획득 — 동시 요청이 순차 처리되도록 강제
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Seat s WHERE s.id = :id")
