@@ -12,11 +12,13 @@ import com.univsitdown.space.repository.SeatRepository;
 import com.univsitdown.space.repository.SpaceRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.cache.annotation.Cacheable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalTime;
@@ -48,6 +50,13 @@ class SpaceServiceTest {
                 List.of("콘센트", "조용함"), thumbnailUrl);
         ReflectionTestUtils.setField(space, "id", UUID.randomUUID());
         return space;
+    }
+
+    @Test
+    void getSpaces_시간에_따라_달라지는_좌석수는_캐시하지_않음() throws NoSuchMethodException {
+        assertThat(SpaceService.class
+                .getMethod("getSpaces", SpaceCategory.class, String.class, Pageable.class)
+                .isAnnotationPresent(Cacheable.class)).isFalse();
     }
 
     @Test

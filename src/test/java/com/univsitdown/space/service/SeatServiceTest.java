@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -114,6 +115,13 @@ class SeatServiceTest {
     }
 
     // --- getSeatLayout ---
+
+    @Test
+    void getSeatLayout_at에_따라_달라지는_좌석상태는_캐시하지_않음() throws NoSuchMethodException {
+        assertThat(SeatService.class
+                .getMethod("getSeatLayout", UUID.class, LocalDateTime.class)
+                .isAnnotationPresent(Cacheable.class)).isFalse();
+    }
 
     @Test
     void getSeatLayout_정상조회_AVAILABLE() {

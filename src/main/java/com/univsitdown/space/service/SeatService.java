@@ -12,7 +12,6 @@ import com.univsitdown.space.repository.SeatRepository;
 import com.univsitdown.space.repository.SpaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,7 +75,6 @@ public class SeatService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "seat:layout", key = "#spaceId")
     public SeatLayoutResponse getSeatLayout(UUID spaceId, LocalDateTime at) {
         spaceRepository.findById(spaceId).orElseThrow(SpaceNotFoundException::new);
 
