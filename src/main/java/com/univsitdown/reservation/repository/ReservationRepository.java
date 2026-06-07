@@ -123,6 +123,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
             FROM reservations
             WHERE user_id = :userId
               AND status IN ('COMPLETED', 'IN_USE', 'SCHEDULED')
+              AND start_at <= :now
               AND start_at >= :from AND start_at < :to
             GROUP BY date
             ORDER BY date
@@ -141,6 +142,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
             JOIN spaces sp ON s.space_id = sp.id
             WHERE r.user_id = :userId
               AND r.status IN ('COMPLETED', 'IN_USE', 'SCHEDULED')
+              AND r.start_at <= :now
               AND r.start_at >= :from AND r.start_at < :to
             GROUP BY s.space_id, sp.name
             ORDER BY minutes DESC
