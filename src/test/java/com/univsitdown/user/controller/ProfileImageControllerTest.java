@@ -3,6 +3,7 @@ package com.univsitdown.user.controller;
 import com.univsitdown.global.config.SecurityConfig;
 import com.univsitdown.global.security.JwtProvider;
 import com.univsitdown.global.security.UserPrincipal;
+import com.univsitdown.space.service.FavoriteService;
 import com.univsitdown.user.domain.UserRole;
 import com.univsitdown.user.dto.UserResponse;
 import com.univsitdown.user.service.UserService;
@@ -32,6 +33,9 @@ class ProfileImageControllerTest {
 
     @MockBean
     UserService userService;
+
+    @MockBean
+    FavoriteService favoriteService;
 
     @MockBean
     JwtProvider jwtProvider;

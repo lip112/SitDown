@@ -2,8 +2,11 @@ package com.univsitdown.user.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.univsitdown.global.config.SecurityConfig;
+import com.univsitdown.global.response.PageResponse;
 import com.univsitdown.global.security.JwtProvider;
 import com.univsitdown.global.security.UserPrincipal;
+import com.univsitdown.space.dto.SpaceListItemResponse;
+import com.univsitdown.space.service.FavoriteService;
 import com.univsitdown.user.domain.UserRole;
 import com.univsitdown.user.dto.UpdateUserRequest;
 import com.univsitdown.user.dto.UserResponse;
@@ -18,6 +21,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
@@ -32,6 +36,7 @@ class UserControllerTest {
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper objectMapper;
     @MockBean UserService userService;
+    @MockBean FavoriteService favoriteService;
     @MockBean JwtProvider jwtProvider;
 
     private static final UUID TEST_USER_ID = UUID.randomUUID();
@@ -66,6 +71,24 @@ class UserControllerTest {
                         .header("Authorization", "Bearer " + TOKEN))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("USER-001"));
+    }
+
+    @Test
+    void getMyFavorites_정상_조회_200() throws Exception {
+        SpaceListItemResponse item = new SpaceListItemResponse(
+                UUID.randomUUID().toString(), "제1열람실", 3, "READING_ROOM",
+                10, 6, "NORMAL", "06:00", "22:00",
+                List.of("콘센트"), null
+        );
+        given(favoriteService.getMyFavorites(eq(TEST_USER_ID), any()))
+                .willReturn(new PageResponse<>(List.of(item), 0, 20, 1, 1, false));
+
+        mockMvc.perform(get("/api/users/me/favorites")
+                        .header("Authorization", "Bearer " + TOKEN))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].name").value("제1열람실"))
+                .andExpect(jsonPath("$.content[0].availableSeats").value(6))
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test

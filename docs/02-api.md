@@ -166,6 +166,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | USER-01 | GET | `/api/users/me` | 내 정보 조회 |
 | USER-02 | PATCH | `/api/users/me` | 내 정보 수정 |
 | USER-03 | POST | `/api/users/me/profile-image` | 프로필 사진 업로드 |
+| USER-04 | GET | `/api/users/me/favorites` | 내 즐겨찾기 공간 목록 조회 |
 | SPACE-01 | GET | `/api/spaces` | 공간 목록 조회 |
 | SPACE-02 | GET | `/api/spaces/{id}` | 공간 상세 조회 |
 | SPACE-03 | GET | `/api/spaces/{id}/congestion` | 혼잡도 예측 조회 |
@@ -476,6 +477,58 @@ POST /api/users/me/profile-image
 | 상태 | 에러 코드 | 발생 조건 | 메시지 |
 |---|---|---|---|
 | 400 | `USER-002` | 이미지 파일이 아니거나 지원하지 않는 형식 | 이미지 파일만 업로드할 수 있습니다. |
+| 401 | `AUTH-201` | 인증 토큰 없음/만료/위조 | 인증이 필요합니다. |
+
+---
+
+#### [USER-04] 내 즐겨찾기 공간 목록 조회
+
+```
+GET /api/users/me/favorites
+```
+
+| 항목 | 내용 |
+|---|---|
+| 설명 | 현재 로그인한 사용자가 즐겨찾기한 공간 목록을 반환한다. |
+| 인증 | Access Token |
+
+**Query Parameters**
+
+| 이름 | 타입 | 필수 | 설명 |
+|---|---|---|---|
+| `page` | number | X | 페이지 번호 (기본 0) |
+| `size` | number | X | 페이지 크기 (기본 20) |
+
+**Response (200 OK)**
+```json
+{
+  "content": [
+    {
+      "id": "space-001",
+      "name": "제1열람실",
+      "floor": 3,
+      "category": "READING_ROOM",
+      "totalSeats": 804,
+      "availableSeats": 523,
+      "congestion": "NORMAL",
+      "openTime": "06:00:00",
+      "closeTime": "22:00:00",
+      "features": ["콘센트", "조용함"],
+      "thumbnailUrl": "https://cdn.../spaces/001.jpg"
+    }
+  ],
+  "page": 0,
+  "size": 20,
+  "totalElements": 1,
+  "totalPages": 1,
+  "hasNext": false
+}
+```
+
+**Error Responses**
+
+| 상태 | 에러 코드 | 발생 조건 | 메시지 |
+|---|---|---|---|
 | 401 | `AUTH-201` | 인증 토큰 없음/만료/위조 | 인증이 필요합니다. |
 
 ---
