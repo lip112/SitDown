@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,15 +24,24 @@ public class StatService {
     private final ReservationRepository reservationRepository;
 
     @Transactional(readOnly = true)
-    public StatResponse getStat(UUID userId, String period) {
-        LocalDate today = LocalDate.now(KST);
-        LocalDate[] range     = getRange(period, today);
-        LocalDate[] prevRange = getRange(period, today.minus(getPeriodLength(period)));
+    public StatResponse getStat(UUID userId, LocalDate from, LocalDate to) {
+        if (from == null || to == null || from.isAfter(to)) {
+            throw new BusinessException(ErrorCode.STAT_INVALID_PERIOD);
+        }
 
-        LocalDateTime from     = range[0].atStartOfDay();
-        LocalDateTime to       = range[1].atStartOfDay();
-        LocalDateTime prevFrom = prevRange[0].atStartOfDay();
-        LocalDateTime prevTo   = prevRange[1].atStartOfDay();
+        LocalDate toExclusive = to.plusDays(1);
+        long days = ChronoUnit.DAYS.between(from, toExclusive);
+        LocalDate prevFrom = from.minusDays(days);
+
+        return getStat(userId, from, toExclusive, prevFrom, from);
+    }
+
+    private StatResponse getStat(UUID userId, LocalDate fromDate, LocalDate toDate,
+                                 LocalDate prevFromDate, LocalDate prevToDate) {
+        LocalDateTime from     = fromDate.atStartOfDay();
+        LocalDateTime to       = toDate.atStartOfDay();
+        LocalDateTime prevFrom = prevFromDate.atStartOfDay();
+        LocalDateTime prevTo   = prevToDate.atStartOfDay();
         LocalDateTime now      = LocalDateTime.now(KST);
 
         List<Object[]> dailyRows = reservationRepository.findDailyMinutes(userId, from, to, now);
@@ -50,28 +60,7 @@ public class StatService {
                         (String) r[0], (String) r[1], ((Number) r[2]).longValue()))
                 .toList();
 
-        return new StatResponse(period, range[0].format(DATE_FMT), range[1].minusDays(1).format(DATE_FMT),
+        return new StatResponse(fromDate.format(DATE_FMT), toDate.minusDays(1).format(DATE_FMT),
                 totalMinutes, totalMinutes - prevMinutes, daily, topSpaces);
-    }
-
-    private LocalDate[] getRange(String period, LocalDate base) {
-        return switch (period.toUpperCase()) {
-            case "WEEKLY"  -> new LocalDate[]{base.with(java.time.DayOfWeek.MONDAY),
-                                              base.with(java.time.DayOfWeek.MONDAY).plusWeeks(1)};
-            case "MONTHLY" -> new LocalDate[]{base.withDayOfMonth(1),
-                                              base.withDayOfMonth(1).plusMonths(1)};
-            case "YEARLY"  -> new LocalDate[]{base.withDayOfYear(1),
-                                              base.withDayOfYear(1).plusYears(1)};
-            default        -> throw new BusinessException(ErrorCode.STAT_INVALID_PERIOD);
-        };
-    }
-
-    private java.time.temporal.TemporalAmount getPeriodLength(String period) {
-        return switch (period.toUpperCase()) {
-            case "WEEKLY"  -> Period.ofWeeks(1);
-            case "MONTHLY" -> Period.ofMonths(1);
-            case "YEARLY"  -> Period.ofYears(1);
-            default        -> Period.ofWeeks(1);
-        };
     }
 }

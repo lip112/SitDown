@@ -3,7 +3,6 @@ package com.univsitdown.stat.dto;
 import java.util.List;
 
 public record StatResponse(
-        String period,
         String from,
         String to,
         long totalMinutes,

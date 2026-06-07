@@ -1057,7 +1057,7 @@ DELETE /api/reservations/{id}
 #### [STAT-01] 내 이용 통계 조회
 
 ```
-GET /api/stats/me
+GET /api/stats/me?from=2026-04-13&to=2026-04-19
 ```
 
 | 항목 | 내용 |
@@ -1069,12 +1069,12 @@ GET /api/stats/me
 
 | 이름 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `period` | enum | X | `WEEKLY` / `MONTHLY` / `YEARLY` (기본 `WEEKLY`) |
+| `from` | date | O | 조회 시작일 (`yyyy-MM-dd`) |
+| `to` | date | O | 조회 종료일 (`yyyy-MM-dd`) |
 
 **Response (200 OK)**
 ```json
 {
-  "period": "WEEKLY",
   "from": "2026-04-13",
   "to": "2026-04-19",
   "totalMinutes": 750,
@@ -1089,11 +1089,13 @@ GET /api/stats/me
 }
 ```
 
+`comparedToPreviousMinutes`는 같은 길이의 직전 기간 대비 증감분이다.
+
 **Error Responses**
 
 | 상태 | 에러 코드 | 발생 조건 | 메시지 |
 |---|---|---|---|
-| 400 | `STAT-001` | 지원하지 않는 조회 기간 | 유효하지 않은 조회 기간입니다. |
+| 400 | `STAT-001` | `from`/`to` 누락, 날짜 형식 오류, 또는 `from`이 `to`보다 늦은 경우 | 유효하지 않은 조회 기간입니다. |
 
 ---
 
