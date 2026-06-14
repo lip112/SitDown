@@ -111,6 +111,8 @@ server {
     listen 80;
     server_name sitdown.bond www.sitdown.bond;
 
+    client_max_body_size 5m;
+
     location /api/ {
         proxy_pass http://backend:8080;
         proxy_set_header Host $host;
@@ -177,7 +179,7 @@ server {
 }
 ```
 
-`/api-docs`와 `/api-docs/`를 모두 처리하는 이유는 브라우저나 Swagger UI 캐시가 trailing slash가 붙은 주소를 요청할 수 있기 때문이다. 백엔드 springdoc의 실제 문서 경로는 `/api-docs`다.
+`client_max_body_size 5m;`는 모바일 프로필 이미지 업로드가 Nginx 기본 제한인 1MB에서 막히지 않게 한다. `/api-docs`와 `/api-docs/`를 모두 처리하는 이유는 브라우저나 Swagger UI 캐시가 trailing slash가 붙은 주소를 요청할 수 있기 때문이다. 백엔드 springdoc의 실제 문서 경로는 `/api-docs`다.
 
 업로드 파일은 `/uploads/**` 경로로 공개 조회된다. Nginx가 이 경로를 프론트엔드로 보내면 `200 OK`여도 HTML이 내려와 이미지가 깨지므로, `location /uploads/`는 `location /`보다 위에 둔다. 백엔드 컨테이너 재생성 후에도 파일이 유지되도록 `APP_UPLOAD_DIR`와 `uploads_data` 볼륨을 함께 설정한다.
 
