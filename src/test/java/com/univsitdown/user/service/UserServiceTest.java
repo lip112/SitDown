@@ -1,8 +1,10 @@
 package com.univsitdown.user.service;
 
 import com.univsitdown.global.exception.BusinessException;
+import com.univsitdown.global.exception.ErrorCode;
 import com.univsitdown.user.domain.Affiliation;
 import com.univsitdown.user.domain.User;
+import com.univsitdown.user.dto.AdminUpdateUserRequest;
 import com.univsitdown.user.dto.UpdateUserRequest;
 import com.univsitdown.user.dto.UserResponse;
 import com.univsitdown.user.exception.UserNotFoundException;
@@ -74,7 +76,36 @@ class UserServiceTest {
 
         assertThat(response.name()).isEqualTo("이름변경");
         assertThat(response.email()).isEqualTo("test@univ.com");    // unchanged
+        assertThat(response.phone()).isEqualTo("010-1234-5678");
         assertThat(response.affiliation()).isEqualTo("UNDERGRADUATE"); // unchanged
+    }
+
+    @Test
+    void updateUserByAdmin_명시적_null인_전화번호와_소속을_삭제한다() {
+        UUID userId = UUID.randomUUID();
+        AdminUpdateUserRequest request = new AdminUpdateUserRequest();
+        request.setPhone(null);
+        request.setAffiliation(null);
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+        UserResponse response = userService.updateUserByAdmin(userId, request);
+
+        assertThat(response.phone()).isNull();
+        assertThat(response.affiliation()).isNull();
+    }
+
+    @Test
+    void updateUserByAdmin_누락한_전화번호와_소속은_유지한다() {
+        UUID userId = UUID.randomUUID();
+        AdminUpdateUserRequest request = new AdminUpdateUserRequest();
+        request.setName("이름변경");
+        given(userRepository.findById(userId)).willReturn(Optional.of(user));
+
+        UserResponse response = userService.updateUserByAdmin(userId, request);
+
+        assertThat(response.name()).isEqualTo("이름변경");
+        assertThat(response.phone()).isEqualTo("010-1234-5678");
+        assertThat(response.affiliation()).isEqualTo("UNDERGRADUATE");
     }
 
     @Test
@@ -104,7 +135,7 @@ class UserServiceTest {
         UUID userId = UUID.randomUUID();
         given(userRepository.findById(userId)).willReturn(Optional.of(user));
 
-        userService.deleteUser(userId);
+        userService.deleteUser(UUID.randomUUID(), userId);
 
         then(userRepository).should().delete(user);
     }
@@ -114,9 +145,19 @@ class UserServiceTest {
         UUID userId = UUID.randomUUID();
         given(userRepository.findById(userId)).willReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.deleteUser(userId))
+        assertThatThrownBy(() -> userService.deleteUser(UUID.randomUUID(), userId))
                 .isInstanceOf(UserNotFoundException.class);
         then(userRepository).should(never()).delete(any());
+    }
+
+    @Test
+    void deleteUser_관리자_자기자신은_삭제할수없다() {
+        UUID adminId = UUID.randomUUID();
+
+        assertThatThrownBy(() -> userService.deleteUser(adminId, adminId))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage(ErrorCode.ADMIN_CANNOT_DELETE_SELF.getMessage());
+        then(userRepository).shouldHaveNoInteractions();
     }
 
     @Test

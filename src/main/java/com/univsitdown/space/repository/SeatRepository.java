@@ -19,6 +19,8 @@ public interface SeatRepository extends JpaRepository<Seat, UUID> {
 
     void deleteBySpaceId(UUID spaceId);
 
+    long countBySpaceId(UUID spaceId);
+
     long countBySpaceIdAndIsEnabledTrue(UUID spaceId);
 
     @Query("SELECT COALESCE(MAX(s.rowNum), 0) FROM Seat s WHERE s.space.id = :spaceId")

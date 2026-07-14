@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -28,7 +29,7 @@ public class NoticeService {
                 ? null
                 : NoticeCategory.valueOf(categoryParam);
         return PageResponse.from(
-                noticeRepository.findActiveByCategory(category, pageable)
+                noticeRepository.findVisibleByCategory(category, Instant.now(), pageable)
                         .map(NoticeListItemResponse::from)
         );
     }
@@ -36,9 +37,25 @@ public class NoticeService {
     @Transactional(readOnly = true)
     public NoticeDetailResponse getNotice(UUID id) {
         return noticeRepository.findById(id)
-                .filter(Notice::isActive)
+                .filter(notice -> notice.isVisibleAt(Instant.now()))
                 .map(NoticeDetailResponse::from)
                 .orElseThrow(NoticeNotFoundException::new);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<NoticeListItemResponse> getAdminNotices(String categoryParam, Pageable pageable) {
+        NoticeCategory category = (categoryParam == null || categoryParam.equalsIgnoreCase("ALL"))
+                ? null
+                : NoticeCategory.valueOf(categoryParam);
+        return PageResponse.from(
+                noticeRepository.findActiveByCategory(category, pageable)
+                        .map(NoticeListItemResponse::from)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public NoticeDetailResponse getAdminNotice(UUID id) {
+        return NoticeDetailResponse.from(findActiveNotice(id));
     }
 
     @Transactional
@@ -56,11 +73,12 @@ public class NoticeService {
     @Transactional
     public NoticeDetailResponse updateNotice(UUID id, UpdateNoticeRequest request) {
         Notice notice = findActiveNotice(id);
-        notice.update(
+        notice.updateByAdmin(
                 request.title(),
                 request.content(),
                 request.category(),
                 request.publishedAt(),
+                request.isExpiresAtProvided(),
                 request.expiresAt()
         );
         return NoticeDetailResponse.from(notice);

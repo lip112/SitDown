@@ -1,6 +1,6 @@
 # UNIV SITDOWN API 명세서
 
-> 버전: 1.0  |  작성일: 2026.04.22  |  백엔드 REST API Specification
+> 버전: 1.3  |  작성일: 2026.07.14  |  백엔드 REST API Specification
 
 ## 1. 문서 개요
 
@@ -193,6 +193,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 | ADMIN-09 | POST | `/api/admin/notices` | (관리자) 공지사항 등록 |
 | ADMIN-10 | PATCH | `/api/admin/notices/{id}` | (관리자) 공지사항 수정 |
 | ADMIN-11 | DELETE | `/api/admin/notices/{id}` | (관리자) 공지사항 삭제 |
+| ADMIN-12 | GET | `/api/admin/notices` | (관리자) 공지사항 목록 조회 |
+| ADMIN-13 | GET | `/api/admin/notices/{id}` | (관리자) 공지사항 상세 조회 |
 
 ---
 
@@ -583,7 +585,7 @@ GET /api/spaces
 }
 ```
 
-> 📌 **구현 참고**: `availableSeats`는 현재 예약 상태에 따라 달라지므로 매 요청마다 DB `COUNT` 쿼리로 계산한다.
+> 📌 **구현 참고**: `totalSeats`는 비활성 좌석을 포함한 전체 좌석 수다. `availableSeats`는 활성 좌석 중 현재 점유되지 않은 좌석만 세며, 혼잡도는 활성 좌석을 분모로 계산한다.
 
 ---
 
@@ -1125,7 +1127,7 @@ GET /api/notices
 
 | 항목 | 내용 |
 |---|---|
-| 설명 | 공지사항 목록을 카테고리별로 조회. |
+| 설명 | 현재 발행 시각이 지났고 만료되지 않은 활성 공지사항을 카테고리별로 조회한다. |
 | 인증 | 불필요 |
 
 **Query Parameters**
@@ -1145,6 +1147,7 @@ GET /api/notices
       "title": "도서관 이용 안내",
       "category": "INFO",
       "publishedAt": "2026-05-18 09:00:00",
+      "expiresAt": null,
       "isNew": true
     }
   ],
@@ -1166,7 +1169,7 @@ GET /api/notices/{id}
 
 | 항목 | 내용 |
 |---|---|
-| 설명 | 활성 상태인 공지사항의 상세 내용을 조회한다. |
+| 설명 | 현재 발행 시각이 지났고 만료되지 않은 활성 공지사항의 상세 내용을 조회한다. |
 | 인증 | 불필요 |
 
 **Path Parameters**
@@ -1182,7 +1185,9 @@ GET /api/notices/{id}
   "title": "도서관 이용 안내",
   "content": "열람실 이용 시 음식을 반입을 금지합니다.",
   "category": "INFO",
-  "publishedAt": "2026-05-18 09:00:00"
+  "publishedAt": "2026-05-18 09:00:00",
+  "expiresAt": null,
+  "isNew": true
 }
 ```
 
@@ -1190,7 +1195,7 @@ GET /api/notices/{id}
 
 | 상태 | 에러 코드 | 발생 조건 | 메시지 |
 |---|---|---|---|
-| 404 | `NOTI-001` | 공지사항 없음 또는 비활성 상태 | 공지사항을 찾을 수 없습니다. |
+| 404 | `NOTI-001` | 공지사항 없음, 비활성, 발행 전 또는 만료 상태 | 공지사항을 찾을 수 없습니다. |
 
 ---
 
@@ -1274,6 +1279,26 @@ GET /api/admin/dashboard
 
 ---
 
+#### [ADMIN-12] 공지사항 목록 조회
+
+```
+GET /api/admin/notices
+```
+
+비활성 처리되지 않은 모든 공지를 조회한다. 공개 API와 달리 발행 전·만료 공지도 포함한다. `category`, `page`, `size` 쿼리 파라미터와 응답 페이지 형식은 NOTI-01과 같으며, 각 항목에 `expiresAt`, `isNew`가 포함된다.
+
+---
+
+#### [ADMIN-13] 공지사항 상세 조회
+
+```
+GET /api/admin/notices/{id}
+```
+
+비활성 처리되지 않은 공지의 상세를 조회한다. 발행 전·만료 공지도 조회할 수 있으며 응답에는 `publishedAt`, `expiresAt`, `isNew`가 포함된다. 공지가 없거나 비활성이면 `404 NOTI-001`을 반환한다.
+
+---
+
 #### [ADMIN-09] 공지사항 등록
 
 ```
@@ -1302,7 +1327,9 @@ POST /api/admin/notices
   "title": "도서관 이용 안내",
   "content": "열람실 이용 시 음식을 반입을 금지합니다.",
   "category": "INFO",
-  "publishedAt": "2026-05-14 09:00:00"
+  "publishedAt": "2026-05-14 09:00:00",
+  "expiresAt": null,
+  "isNew": true
 }
 ```
 
@@ -1322,7 +1349,7 @@ PATCH /api/admin/notices/{id}
 
 | 항목 | 내용 |
 |---|---|
-| 설명 | 공지사항의 제목, 본문, 카테고리, 발행/만료 시각을 수정한다. 요청에 포함된 필드만 변경한다. |
+| 설명 | 공지사항의 제목, 본문, 카테고리, 발행/만료 시각을 수정한다. 요청에 포함된 필드만 변경하며 `expiresAt: null`은 만료 시각을 삭제한다. |
 | 인증 | Access Token (ADMIN) |
 
 **Request Body**
@@ -1342,7 +1369,9 @@ PATCH /api/admin/notices/{id}
   "title": "수정된 공지",
   "content": "수정된 내용입니다.",
   "category": "EVENT",
-  "publishedAt": "2026-05-14 09:00:00"
+  "publishedAt": "2026-05-14 09:00:00",
+  "expiresAt": null,
+  "isNew": true
 }
 ```
 
@@ -1458,8 +1487,8 @@ PATCH /api/admin/users/{id}
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
 | `name` | string | X | 이름 (2자 이상 20자 이하) |
-| `phone` | string | X | 전화번호 (010-1234-5678 형식) |
-| `affiliation` | enum | X | 소속 (`Affiliation` 참고) |
+| `phone` | string | X | 전화번호 (010-1234-5678 형식). 명시적 `null`이면 삭제, 필드 생략 시 유지 |
+| `affiliation` | enum | X | 소속 (`Affiliation` 참고). 명시적 `null`이면 삭제, 필드 생략 시 유지 |
 
 **Error Responses**
 
@@ -1492,6 +1521,7 @@ DELETE /api/admin/users/{id}
 | 상태 | 에러 코드 | 발생 조건 | 메시지 |
 |---|---|---|---|
 | 404 | `USER-001` | 회원 없음 | 사용자를 찾을 수 없습니다. |
+| 409 | `ADMIN-003` | 현재 로그인한 관리자 자신을 삭제 | 현재 로그인한 관리자 계정은 삭제할 수 없습니다. |
 
 ---
 
@@ -1690,6 +1720,7 @@ WHERE (status NOT IN ('CANCELED', 'NO_SHOW'));
 | `RSV-031` | 404 | 예약 없음 | 예약을 찾을 수 없습니다. |
 | `ADMIN-001` | 400 | 좌석 크기 초과 | 행과 열은 각각 최대 20까지 허용됩니다. |
 | `ADMIN-002` | 409 | 좌석 충돌 | 이미 좌석이 존재합니다. |
+| `ADMIN-003` | 409 | 관리자 자기 계정 삭제 | 현재 로그인한 관리자 계정은 삭제할 수 없습니다. |
 | `NOTI-001` | 404 | 공지사항 없음 | 공지사항을 찾을 수 없습니다. |
 | `STAT-001` | 400 | 유효하지 않은 조회 기간 | 유효하지 않은 조회 기간입니다. |
 | `COMMON-100` | 400 | 입력값 검증 실패 (`@Valid`) | 입력값이 올바르지 않습니다. |
@@ -1705,3 +1736,4 @@ WHERE (status NOT IN ('CANCELED', 'NO_SHOW'));
 | 1.0 | 2026.04.22 | - | 최초 작성 (UNIV SITDOWN API 초안) |
 | 1.1 | 2026.05.04 | - | `affiliation` 필드를 자유 문자열 → `Affiliation` Enum으로 변경 (3.5절 추가) |
 | 1.2 | 2026.07.14 | - | 좌석 배치/상세의 선택 날짜·시간 조회와 미래 예약 `RESERVED` 상태 반영 |
+| 1.3 | 2026.07.14 | - | 관리자 공지 조회, 공지 노출 기간·nullable PATCH, 좌석 집계, 관리자 자기삭제 방지 계약 반영 |

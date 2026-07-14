@@ -92,15 +92,17 @@ class FavoriteServiceTest {
 
         given(userFavoriteRepository.findFavoriteSpacesByUserId(userId, pageable))
                 .willReturn(new PageImpl<>(List.of(space), pageable, 1));
-        given(seatRepository.countBySpaceIdAndIsEnabledTrue(spaceId)).willReturn(10L);
-        given(reservationRepository.countOccupiedBySpaceId(eq(spaceId), any())).willReturn(4L);
+        given(seatRepository.countBySpaceId(spaceId)).willReturn(10L);
+        given(seatRepository.countBySpaceIdAndIsEnabledTrue(spaceId)).willReturn(7L);
+        given(reservationRepository.countOccupiedEnabledBySpaceId(eq(spaceId), any())).willReturn(2L);
 
         PageResponse<SpaceListItemResponse> response = favoriteService.getMyFavorites(userId, pageable);
 
         assertThat(response.content()).hasSize(1);
         SpaceListItemResponse item = response.content().get(0);
         assertThat(item.id()).isEqualTo(spaceId.toString());
-        assertThat(item.availableSeats()).isEqualTo(6);
-        assertThat(item.congestion()).isEqualTo("NORMAL");
+        assertThat(item.totalSeats()).isEqualTo(10);
+        assertThat(item.availableSeats()).isEqualTo(5);
+        assertThat(item.congestion()).isEqualTo("LOW");
     }
 }

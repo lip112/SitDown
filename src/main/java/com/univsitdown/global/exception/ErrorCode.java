@@ -40,6 +40,7 @@ public enum ErrorCode {
     // ADMIN
     SEAT_GRID_SIZE_EXCEEDED("ADMIN-001", HttpStatus.BAD_REQUEST, "행과 열은 각각 최대 20까지 허용됩니다."),
     SEAT_ALREADY_EXISTS("ADMIN-002", HttpStatus.CONFLICT, "이미 좌석이 존재합니다."),
+    ADMIN_CANNOT_DELETE_SELF("ADMIN-003", HttpStatus.CONFLICT, "현재 로그인한 관리자 계정은 삭제할 수 없습니다."),
 
     // NOTICE
     NOTICE_NOT_FOUND("NOTI-001", HttpStatus.NOT_FOUND, "공지사항을 찾을 수 없습니다."),

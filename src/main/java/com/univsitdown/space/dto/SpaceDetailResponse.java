@@ -31,6 +31,11 @@ public record SpaceDetailResponse(
 
     public static SpaceDetailResponse from(Space space, int totalSeats, int availableSeats,
                                            int rows, int columns, boolean isFavorite) {
+        return from(space, totalSeats, totalSeats, availableSeats, rows, columns, isFavorite);
+    }
+
+    public static SpaceDetailResponse from(Space space, int totalSeats, int enabledSeats,
+                                           int availableSeats, int rows, int columns, boolean isFavorite) {
         return new SpaceDetailResponse(
                 space.getId() != null ? space.getId().toString() : null,
                 space.getName(),
@@ -40,7 +45,7 @@ public record SpaceDetailResponse(
                 availableSeats,
                 rows,
                 columns,
-                computeCongestion(totalSeats, availableSeats),
+                computeCongestion(enabledSeats, availableSeats),
                 space.getOpenTime().toString(),
                 space.getCloseTime().toString(),
                 space.getMaxReservationHours(),
@@ -59,9 +64,9 @@ public record SpaceDetailResponse(
         return thumbnailUrl == null || thumbnailUrl.isBlank() ? List.of() : List.of(thumbnailUrl);
     }
 
-    private static String computeCongestion(int totalSeats, int availableSeats) {
-        if (totalSeats == 0) return "LOW";
-        double occupancyRate = (double) (totalSeats - availableSeats) / totalSeats;
+    private static String computeCongestion(int enabledSeats, int availableSeats) {
+        if (enabledSeats == 0) return "LOW";
+        double occupancyRate = (double) (enabledSeats - availableSeats) / enabledSeats;
         if (occupancyRate < 0.40) return "LOW";
         if (occupancyRate < 0.75) return "NORMAL";
         return "HIGH";

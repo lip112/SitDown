@@ -4,6 +4,7 @@ import com.univsitdown.global.exception.BusinessException;
 import com.univsitdown.global.exception.ErrorCode;
 import com.univsitdown.global.response.PageResponse;
 import com.univsitdown.user.domain.User;
+import com.univsitdown.user.dto.AdminUpdateUserRequest;
 import com.univsitdown.user.dto.UpdateUserRequest;
 import com.univsitdown.user.dto.UserResponse;
 import com.univsitdown.user.exception.UserNotFoundException;
@@ -52,6 +53,18 @@ public class UserService {
     }
 
     @Transactional
+    public UserResponse updateUserByAdmin(UUID userId, AdminUpdateUserRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+        user.updateByAdmin(
+                request.name(),
+                request.isPhoneProvided(), request.phone(),
+                request.isAffiliationProvided(), request.affiliation()
+        );
+        return UserResponse.from(user);
+    }
+
+    @Transactional
     public UserResponse updateProfileImage(UUID userId, MultipartFile file) {
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
@@ -74,7 +87,10 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteUser(UUID userId) {
+    public void deleteUser(UUID requesterId, UUID userId) {
+        if (requesterId.equals(userId)) {
+            throw new BusinessException(ErrorCode.ADMIN_CANNOT_DELETE_SELF);
+        }
         User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
         userRepository.delete(user);

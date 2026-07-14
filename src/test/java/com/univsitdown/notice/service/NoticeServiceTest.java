@@ -40,7 +40,7 @@ class NoticeServiceTest {
 
     @Test
     void getNotices_카테고리없음_전체반환() {
-        given(noticeRepository.findActiveByCategory(isNull(), any()))
+        given(noticeRepository.findVisibleByCategory(isNull(), any(Instant.class), any()))
                 .willReturn(new PageImpl<>(List.of()));
         PageResponse<NoticeListItemResponse> result = noticeService.getNotices(null, PageRequest.of(0, 20));
         assertThat(result.content()).isEmpty();
@@ -48,7 +48,7 @@ class NoticeServiceTest {
 
     @Test
     void getNotices_ALL_카테고리_전체반환() {
-        given(noticeRepository.findActiveByCategory(isNull(), any()))
+        given(noticeRepository.findVisibleByCategory(isNull(), any(Instant.class), any()))
                 .willReturn(new PageImpl<>(List.of()));
         PageResponse<NoticeListItemResponse> result = noticeService.getNotices("ALL", PageRequest.of(0, 20));
         assertThat(result.content()).isEmpty();
@@ -78,6 +78,61 @@ class NoticeServiceTest {
     }
 
     @Test
+    void getNotice_발행전이면_예외() {
+        Notice notice = createNotice(true, Instant.now().plusSeconds(3600), null);
+        given(noticeRepository.findById(notice.getId())).willReturn(Optional.of(notice));
+
+        assertThatThrownBy(() -> noticeService.getNotice(notice.getId()))
+                .isInstanceOf(NoticeNotFoundException.class);
+    }
+
+    @Test
+    void getNotice_만료됐으면_예외() {
+        Notice notice = createNotice(
+                true,
+                Instant.now().minusSeconds(7200),
+                Instant.now().minusSeconds(3600)
+        );
+        given(noticeRepository.findById(notice.getId())).willReturn(Optional.of(notice));
+
+        assertThatThrownBy(() -> noticeService.getNotice(notice.getId()))
+                .isInstanceOf(NoticeNotFoundException.class);
+    }
+
+    @Test
+    void getAdminNotices_발행전과_만료된_활성공지도_조회한다() {
+        Notice scheduled = createNotice(true, Instant.now().plusSeconds(3600), null);
+        Notice expired = createNotice(
+                true,
+                Instant.now().minusSeconds(7200),
+                Instant.now().minusSeconds(3600)
+        );
+        PageRequest pageable = PageRequest.of(0, 20);
+        given(noticeRepository.findActiveByCategory(null, pageable))
+                .willReturn(new PageImpl<>(List.of(scheduled, expired), pageable, 2));
+
+        PageResponse<NoticeListItemResponse> response = noticeService.getAdminNotices(null, pageable);
+
+        assertThat(response.content()).hasSize(2);
+        assertThat(response.content().get(1).expiresAt()).isNotNull();
+    }
+
+    @Test
+    void getAdminNotice_만료된_활성공지의_상세를_조회한다() {
+        Notice expired = createNotice(
+                true,
+                Instant.now().minusSeconds(7200),
+                Instant.now().minusSeconds(3600)
+        );
+        given(noticeRepository.findById(expired.getId())).willReturn(Optional.of(expired));
+
+        NoticeDetailResponse response = noticeService.getAdminNotice(expired.getId());
+
+        assertThat(response.expiresAt()).isNotNull();
+        assertThat(response.isNew()).isTrue();
+    }
+
+    @Test
     void createNotice_공지생성_성공() {
         Notice saved = createNotice(true);
         saved.update(
@@ -104,26 +159,45 @@ class NoticeServiceTest {
 
     @Test
     void updateNotice_공지수정_성공() {
-        Notice notice = createNotice(true);
+        Notice notice = createNotice(true, Instant.now().minusSeconds(60), Instant.now().plusSeconds(3600));
         given(noticeRepository.findById(notice.getId())).willReturn(Optional.of(notice));
+        UpdateNoticeRequest request = new UpdateNoticeRequest();
+        request.setTitle("수정 제목");
+        request.setCategory(NoticeCategory.EVENT);
 
         NoticeDetailResponse response = noticeService.updateNotice(
                 notice.getId(),
-                new UpdateNoticeRequest("수정 제목", null, NoticeCategory.EVENT, null, null)
+                request
         );
 
         assertThat(response.title()).isEqualTo("수정 제목");
         assertThat(response.category()).isEqualTo("EVENT");
+        assertThat(response.expiresAt()).isNotNull();
+    }
+
+    @Test
+    void updateNotice_명시적_null이면_만료시각을_삭제한다() {
+        Notice notice = createNotice(true, Instant.now().minusSeconds(60), Instant.now().plusSeconds(3600));
+        given(noticeRepository.findById(notice.getId())).willReturn(Optional.of(notice));
+        UpdateNoticeRequest request = new UpdateNoticeRequest();
+        request.setExpiresAt(null);
+
+        NoticeDetailResponse response = noticeService.updateNotice(notice.getId(), request);
+
+        assertThat(response.expiresAt()).isNull();
+        assertThat(notice.getExpiresAt()).isNull();
     }
 
     @Test
     void updateNotice_없는공지_예외() {
         UUID noticeId = UUID.randomUUID();
         given(noticeRepository.findById(noticeId)).willReturn(Optional.empty());
+        UpdateNoticeRequest request = new UpdateNoticeRequest();
+        request.setTitle("수정 제목");
 
         assertThatThrownBy(() -> noticeService.updateNotice(
                 noticeId,
-                new UpdateNoticeRequest("수정 제목", null, null, null, null)
+                request
         )).isInstanceOf(NoticeNotFoundException.class);
     }
 
@@ -148,6 +222,10 @@ class NoticeServiceTest {
     }
 
     private Notice createNotice(boolean active) {
+        return createNotice(active, Instant.now().minusSeconds(60), null);
+    }
+
+    private Notice createNotice(boolean active, Instant publishedAtValue, Instant expiresAtValue) {
         try {
             var constructor = Notice.class.getDeclaredConstructor();
             constructor.setAccessible(true);
@@ -175,7 +253,11 @@ class NoticeServiceTest {
 
             var publishedAt = Notice.class.getDeclaredField("publishedAt");
             publishedAt.setAccessible(true);
-            publishedAt.set(notice, java.time.Instant.now());
+            publishedAt.set(notice, publishedAtValue);
+
+            var expiresAt = Notice.class.getDeclaredField("expiresAt");
+            expiresAt.setAccessible(true);
+            expiresAt.set(notice, expiresAtValue);
 
             var createdAt = Notice.class.getDeclaredField("createdAt");
             createdAt.setAccessible(true);

@@ -64,8 +64,9 @@ class SpaceServiceTest {
         PageRequest pageable = PageRequest.of(0, 20);
         given(spaceRepository.findByFilters(null, null, pageable))
                 .willReturn(new PageImpl<>(List.of(sampleSpace())));
+        given(seatRepository.countBySpaceId(any())).willReturn(10L);
         given(seatRepository.countBySpaceIdAndIsEnabledTrue(any())).willReturn(10L);
-        given(reservationRepository.countOccupiedBySpaceId(any(), any())).willReturn(3L);
+        given(reservationRepository.countOccupiedEnabledBySpaceId(any(), any())).willReturn(3L);
 
         PageResponse<SpaceListItemResponse> response = spaceService.getSpaces(null, null, pageable);
 
@@ -81,8 +82,9 @@ class SpaceServiceTest {
         PageRequest pageable = PageRequest.of(0, 20);
         given(spaceRepository.findByFilters(null, null, pageable))
                 .willReturn(new PageImpl<>(List.of(sampleSpace())));
+        given(seatRepository.countBySpaceId(any())).willReturn(10L);
         given(seatRepository.countBySpaceIdAndIsEnabledTrue(any())).willReturn(10L);
-        given(reservationRepository.countOccupiedBySpaceId(any(), any())).willReturn(6L);
+        given(reservationRepository.countOccupiedEnabledBySpaceId(any(), any())).willReturn(6L);
 
         PageResponse<SpaceListItemResponse> response = spaceService.getSpaces(null, null, pageable);
 
@@ -94,8 +96,9 @@ class SpaceServiceTest {
         PageRequest pageable = PageRequest.of(0, 20);
         given(spaceRepository.findByFilters(null, null, pageable))
                 .willReturn(new PageImpl<>(List.of(sampleSpace())));
+        given(seatRepository.countBySpaceId(any())).willReturn(10L);
         given(seatRepository.countBySpaceIdAndIsEnabledTrue(any())).willReturn(10L);
-        given(reservationRepository.countOccupiedBySpaceId(any(), any())).willReturn(8L);
+        given(reservationRepository.countOccupiedEnabledBySpaceId(any(), any())).willReturn(8L);
 
         PageResponse<SpaceListItemResponse> response = spaceService.getSpaces(null, null, pageable);
 
@@ -107,12 +110,43 @@ class SpaceServiceTest {
         PageRequest pageable = PageRequest.of(0, 20);
         given(spaceRepository.findByFilters(null, null, pageable))
                 .willReturn(new PageImpl<>(List.of(sampleSpace())));
+        given(seatRepository.countBySpaceId(any())).willReturn(0L);
         given(seatRepository.countBySpaceIdAndIsEnabledTrue(any())).willReturn(0L);
-        given(reservationRepository.countOccupiedBySpaceId(any(), any())).willReturn(0L);
+        given(reservationRepository.countOccupiedEnabledBySpaceId(any(), any())).willReturn(0L);
 
         PageResponse<SpaceListItemResponse> response = spaceService.getSpaces(null, null, pageable);
 
         assertThat(response.content().get(0).congestion()).isEqualTo("LOW");
+    }
+
+    @Test
+    void getSpaces_totalSeats는_비활성좌석을_포함하고_availableSeats는_제외한다() {
+        PageRequest pageable = PageRequest.of(0, 20);
+        given(spaceRepository.findByFilters(null, null, pageable))
+                .willReturn(new PageImpl<>(List.of(sampleSpace())));
+        given(seatRepository.countBySpaceId(any())).willReturn(10L);
+        given(seatRepository.countBySpaceIdAndIsEnabledTrue(any())).willReturn(7L);
+        given(reservationRepository.countOccupiedEnabledBySpaceId(any(), any())).willReturn(2L);
+
+        SpaceListItemResponse item = spaceService.getSpaces(null, null, pageable).content().get(0);
+
+        assertThat(item.totalSeats()).isEqualTo(10);
+        assertThat(item.availableSeats()).isEqualTo(5);
+        assertThat(item.congestion()).isEqualTo("LOW");
+    }
+
+    @Test
+    void getSpaces_집계중_좌석상태가_바뀌어도_availableSeats는_음수가_아니다() {
+        PageRequest pageable = PageRequest.of(0, 20);
+        given(spaceRepository.findByFilters(null, null, pageable))
+                .willReturn(new PageImpl<>(List.of(sampleSpace())));
+        given(seatRepository.countBySpaceId(any())).willReturn(1L);
+        given(seatRepository.countBySpaceIdAndIsEnabledTrue(any())).willReturn(1L);
+        given(reservationRepository.countOccupiedEnabledBySpaceId(any(), any())).willReturn(2L);
+
+        SpaceListItemResponse item = spaceService.getSpaces(null, null, pageable).content().get(0);
+
+        assertThat(item.availableSeats()).isZero();
     }
 
     @Test
@@ -121,10 +155,11 @@ class SpaceServiceTest {
         Space space = sampleSpace();
         ReflectionTestUtils.setField(space, "id", id);
         given(spaceRepository.findById(id)).willReturn(Optional.of(space));
+        given(seatRepository.countBySpaceId(id)).willReturn(20L);
         given(seatRepository.countBySpaceIdAndIsEnabledTrue(id)).willReturn(20L);
         given(seatRepository.findMaxRowBySpaceId(id)).willReturn(4);
         given(seatRepository.findMaxColBySpaceId(id)).willReturn(5);
-        given(reservationRepository.countOccupiedBySpaceId(eq(id), any())).willReturn(5L);
+        given(reservationRepository.countOccupiedEnabledBySpaceId(eq(id), any())).willReturn(5L);
 
         SpaceDetailResponse response = spaceService.getSpace(id, null);
 
@@ -137,16 +172,36 @@ class SpaceServiceTest {
     }
 
     @Test
+    void getSpace_비활성좌석은_total에_포함하지만_혼잡도_분모에서는_제외한다() {
+        UUID id = UUID.randomUUID();
+        Space space = sampleSpace();
+        ReflectionTestUtils.setField(space, "id", id);
+        given(spaceRepository.findById(id)).willReturn(Optional.of(space));
+        given(seatRepository.countBySpaceId(id)).willReturn(10L);
+        given(seatRepository.countBySpaceIdAndIsEnabledTrue(id)).willReturn(7L);
+        given(seatRepository.findMaxRowBySpaceId(id)).willReturn(2);
+        given(seatRepository.findMaxColBySpaceId(id)).willReturn(5);
+        given(reservationRepository.countOccupiedEnabledBySpaceId(eq(id), any())).willReturn(2L);
+
+        SpaceDetailResponse response = spaceService.getSpace(id, null);
+
+        assertThat(response.totalSeats()).isEqualTo(10);
+        assertThat(response.availableSeats()).isEqualTo(5);
+        assertThat(response.congestion()).isEqualTo("LOW");
+    }
+
+    @Test
     void getSpace_thumbnailUrl이_있으면_images에_포함() {
         UUID id = UUID.randomUUID();
         String thumbnailUrl = "https://cdn.example.com/spaces/001.jpg";
         Space space = sampleSpace(thumbnailUrl);
         ReflectionTestUtils.setField(space, "id", id);
         given(spaceRepository.findById(id)).willReturn(Optional.of(space));
+        given(seatRepository.countBySpaceId(id)).willReturn(0L);
         given(seatRepository.countBySpaceIdAndIsEnabledTrue(id)).willReturn(0L);
         given(seatRepository.findMaxRowBySpaceId(id)).willReturn(0);
         given(seatRepository.findMaxColBySpaceId(id)).willReturn(0);
-        given(reservationRepository.countOccupiedBySpaceId(eq(id), any())).willReturn(0L);
+        given(reservationRepository.countOccupiedEnabledBySpaceId(eq(id), any())).willReturn(0L);
 
         SpaceDetailResponse response = spaceService.getSpace(id, null);
 

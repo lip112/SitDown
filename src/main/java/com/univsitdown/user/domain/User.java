@@ -63,6 +63,14 @@ public class User {
         if (affiliation != null) this.affiliation = affiliation;
     }
 
+    public void updateByAdmin(String name,
+                              boolean phoneProvided, String phone,
+                              boolean affiliationProvided, Affiliation affiliation) {
+        if (name != null) this.name = name;
+        if (phoneProvided) this.phone = phone;
+        if (affiliationProvided) this.affiliation = affiliation;
+    }
+
     public void updateProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }

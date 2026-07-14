@@ -59,8 +59,9 @@ public class FavoriteService {
     }
 
     private SpaceListItemResponse toListItem(Space space, LocalDateTime now) {
-        int total = (int) seatRepository.countBySpaceIdAndIsEnabledTrue(space.getId());
-        int occupied = (int) reservationRepository.countOccupiedBySpaceId(space.getId(), now);
-        return SpaceListItemResponse.from(space, total, total - occupied);
+        int total = (int) seatRepository.countBySpaceId(space.getId());
+        int enabled = (int) seatRepository.countBySpaceIdAndIsEnabledTrue(space.getId());
+        int occupied = (int) reservationRepository.countOccupiedEnabledBySpaceId(space.getId(), now);
+        return SpaceListItemResponse.from(space, total, enabled, Math.max(0, enabled - occupied));
     }
 }

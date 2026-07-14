@@ -8,6 +8,7 @@ public record NoticeListItemResponse(
         String title,
         String category,
         String publishedAt,
+        String expiresAt,
         boolean isNew
 ) {
     public static NoticeListItemResponse from(Notice notice) {
@@ -18,6 +19,7 @@ public record NoticeListItemResponse(
                 notice.getTitle(),
                 notice.getCategory().name(),
                 DateTimeUtils.toKst(notice.getPublishedAt()),
+                notice.getExpiresAt() == null ? null : DateTimeUtils.toKst(notice.getExpiresAt()),
                 isNew
         );
     }

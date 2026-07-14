@@ -72,7 +72,21 @@ public class Notice {
         }
     }
 
+    public void updateByAdmin(String title, String content, NoticeCategory category,
+                              Instant publishedAt, boolean expiresAtProvided, Instant expiresAt) {
+        update(title, content, category, publishedAt, null);
+        if (expiresAtProvided) {
+            this.expiresAt = expiresAt;
+        }
+    }
+
     public void deactivate() {
         this.isActive = false;
+    }
+
+    public boolean isVisibleAt(Instant now) {
+        return isActive
+                && !publishedAt.isAfter(now)
+                && (expiresAt == null || expiresAt.isAfter(now));
     }
 }

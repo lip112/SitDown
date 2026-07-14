@@ -1,7 +1,9 @@
 package com.univsitdown.user.controller;
 
 import com.univsitdown.global.response.PageResponse;
-import com.univsitdown.user.dto.UpdateUserRequest;
+import com.univsitdown.global.security.CurrentUser;
+import com.univsitdown.global.security.UserPrincipal;
+import com.univsitdown.user.dto.AdminUpdateUserRequest;
 import com.univsitdown.user.dto.UserResponse;
 import com.univsitdown.user.service.UserService;
 import jakarta.validation.Valid;
@@ -32,13 +34,15 @@ public class AdminUserController {
     @PatchMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable UUID id,
-            @Valid @RequestBody UpdateUserRequest request) {
-        return ResponseEntity.ok(userService.updateUser(id, request));
+            @Valid @RequestBody AdminUpdateUserRequest request) {
+        return ResponseEntity.ok(userService.updateUserByAdmin(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
-        userService.deleteUser(id);
+    public ResponseEntity<Void> deleteUser(
+            @CurrentUser UserPrincipal principal,
+            @PathVariable UUID id) {
+        userService.deleteUser(principal.userId(), id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -52,12 +52,14 @@ public class SpaceService {
         Space space = spaceRepository.findById(id)
                 .orElseThrow(SpaceNotFoundException::new);
         LocalDateTime now = LocalDateTime.now(ZoneOffset.ofHours(9));
-        int total = (int) seatRepository.countBySpaceIdAndIsEnabledTrue(id);
+        int total = (int) seatRepository.countBySpaceId(id);
+        int enabled = (int) seatRepository.countBySpaceIdAndIsEnabledTrue(id);
         int rows = seatRepository.findMaxRowBySpaceId(id);
         int columns = seatRepository.findMaxColBySpaceId(id);
-        int occupied = (int) reservationRepository.countOccupiedBySpaceId(id, now);
+        int occupied = (int) reservationRepository.countOccupiedEnabledBySpaceId(id, now);
         boolean isFav = userId != null && favoriteService.isFavorite(userId, id);
-        return SpaceDetailResponse.from(space, total, total - occupied, rows, columns, isFav);
+        return SpaceDetailResponse.from(
+                space, total, enabled, Math.max(0, enabled - occupied), rows, columns, isFav);
     }
 
     @Transactional(readOnly = true)
@@ -107,8 +109,9 @@ public class SpaceService {
     }
 
     private SpaceListItemResponse toListItem(Space space, LocalDateTime now) {
-        int total = (int) seatRepository.countBySpaceIdAndIsEnabledTrue(space.getId());
-        int occupied = (int) reservationRepository.countOccupiedBySpaceId(space.getId(), now);
-        return SpaceListItemResponse.from(space, total, total - occupied);
+        int total = (int) seatRepository.countBySpaceId(space.getId());
+        int enabled = (int) seatRepository.countBySpaceIdAndIsEnabledTrue(space.getId());
+        int occupied = (int) reservationRepository.countOccupiedEnabledBySpaceId(space.getId(), now);
+        return SpaceListItemResponse.from(space, total, enabled, Math.max(0, enabled - occupied));
     }
 }

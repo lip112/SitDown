@@ -2,14 +2,17 @@ package com.univsitdown.notice.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.univsitdown.global.config.SecurityConfig;
+import com.univsitdown.global.response.PageResponse;
 import com.univsitdown.global.security.JwtProvider;
 import com.univsitdown.notice.domain.NoticeCategory;
 import com.univsitdown.notice.dto.CreateNoticeRequest;
 import com.univsitdown.notice.dto.NoticeDetailResponse;
+import com.univsitdown.notice.dto.NoticeListItemResponse;
 import com.univsitdown.notice.dto.UpdateNoticeRequest;
 import com.univsitdown.notice.exception.NoticeNotFoundException;
 import com.univsitdown.notice.service.NoticeService;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -19,14 +22,18 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -47,8 +54,41 @@ class AdminNoticeControllerTest {
             "공지 제목",
             "공지 내용",
             "INFO",
-            "2026-05-14 09:00:00"
+            "2026-05-14 09:00:00",
+            null,
+            true
     );
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void getNotices_관리자목록_200() throws Exception {
+        NoticeListItemResponse item = new NoticeListItemResponse(
+                NOTICE_ID.toString(),
+                "예약 공지",
+                "INFO",
+                "2026-05-15 09:00:00",
+                "2026-05-16 09:00:00",
+                true
+        );
+        given(noticeService.getAdminNotices(any(), any()))
+                .willReturn(new PageResponse<>(List.of(item), 0, 20, 1, 1, false));
+
+        mockMvc.perform(get("/api/admin/notices"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].expiresAt").value("2026-05-16 09:00:00"))
+                .andExpect(jsonPath("$.content[0].isNew").value(true));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void getNotice_관리자상세_200() throws Exception {
+        given(noticeService.getAdminNotice(NOTICE_ID)).willReturn(SAMPLE_RESPONSE);
+
+        mockMvc.perform(get("/api/admin/notices/{id}", NOTICE_ID))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(NOTICE_ID.toString()))
+                .andExpect(jsonPath("$.isNew").value(true));
+    }
 
     @Test
     @WithMockUser(roles = "ADMIN")
@@ -95,17 +135,29 @@ class AdminNoticeControllerTest {
                 "수정 제목",
                 "공지 내용",
                 "EVENT",
-                "2026-05-14 09:00:00"
+                "2026-05-14 09:00:00",
+                null,
+                true
         );
         given(noticeService.updateNotice(eq(NOTICE_ID), any())).willReturn(updated);
-        UpdateNoticeRequest request = new UpdateNoticeRequest("수정 제목", null, NoticeCategory.EVENT, null, null);
 
         mockMvc.perform(patch("/api/admin/notices/{id}", NOTICE_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content("""
+                                {
+                                  "title": "수정 제목",
+                                  "category": "EVENT",
+                                  "expiresAt": null
+                                }
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("수정 제목"))
                 .andExpect(jsonPath("$.category").value("EVENT"));
+
+        ArgumentCaptor<UpdateNoticeRequest> captor = ArgumentCaptor.forClass(UpdateNoticeRequest.class);
+        then(noticeService).should().updateNotice(eq(NOTICE_ID), captor.capture());
+        assertThat(captor.getValue().isExpiresAtProvided()).isTrue();
+        assertThat(captor.getValue().expiresAt()).isNull();
     }
 
     @Test
@@ -115,8 +167,9 @@ class AdminNoticeControllerTest {
 
         mockMvc.perform(patch("/api/admin/notices/{id}", NOTICE_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(
-                                new UpdateNoticeRequest("수정 제목", null, null, null, null))))
+                        .content("""
+                                {"title": "수정 제목"}
+                                """))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("NOTI-001"));
     }
