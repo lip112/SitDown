@@ -21,6 +21,7 @@ import org.springframework.cache.annotation.Cacheable;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -137,6 +138,40 @@ class SeatServiceTest {
 
         assertThat(response.seats()).hasSize(1);
         assertThat(response.seats().get(0).status()).isEqualTo("AVAILABLE");
+    }
+
+    @Test
+    void getSeatLayout_미래시각에예약된좌석_RESERVED() {
+        UUID spaceId = UUID.randomUUID();
+        Space space = sampleSpace();
+        Seat seat = Seat.create(space, 1, 1, "A-1");
+        ReflectionTestUtils.setField(seat, "id", UUID.randomUUID());
+        LocalDateTime selectedAt = LocalDateTime.now(ZoneOffset.ofHours(9)).plusDays(1);
+        given(spaceRepository.findById(spaceId)).willReturn(Optional.of(space));
+        given(seatRepository.findBySpaceIdOrderByRowNumAscColNumAsc(spaceId)).willReturn(List.of(seat));
+        given(reservationRepository.findOccupiedSeatIdsBySpaceId(spaceId, selectedAt))
+                .willReturn(List.of(seat.getId()));
+
+        SeatLayoutResponse response = seatService.getSeatLayout(spaceId, selectedAt);
+
+        assertThat(response.seats().get(0).status()).isEqualTo("RESERVED");
+    }
+
+    @Test
+    void getSeatLayout_과거시각에점유된좌석_OCCUPIED() {
+        UUID spaceId = UUID.randomUUID();
+        Space space = sampleSpace();
+        Seat seat = Seat.create(space, 1, 1, "A-1");
+        ReflectionTestUtils.setField(seat, "id", UUID.randomUUID());
+        LocalDateTime selectedAt = LocalDateTime.now(ZoneOffset.ofHours(9)).minusMinutes(1);
+        given(spaceRepository.findById(spaceId)).willReturn(Optional.of(space));
+        given(seatRepository.findBySpaceIdOrderByRowNumAscColNumAsc(spaceId)).willReturn(List.of(seat));
+        given(reservationRepository.findOccupiedSeatIdsBySpaceId(spaceId, selectedAt))
+                .willReturn(List.of(seat.getId()));
+
+        SeatLayoutResponse response = seatService.getSeatLayout(spaceId, selectedAt);
+
+        assertThat(response.seats().get(0).status()).isEqualTo("OCCUPIED");
     }
 
     @Test

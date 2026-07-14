@@ -15,10 +15,12 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -45,6 +47,28 @@ class SeatControllerTest {
     }
 
     @Test
+    void getSeatLayout_선택한날짜시간으로조회() throws Exception {
+        UUID spaceId = UUID.randomUUID();
+        given(seatService.getSeatLayout(any(), any()))
+                .willReturn(new SeatLayoutResponse(spaceId.toString(), 0, 0, List.of()));
+
+        mockMvc.perform(get("/api/spaces/{id}/seats", spaceId)
+                        .param("at", "2026-07-20T14:30:00"))
+                .andExpect(status().isOk());
+
+        then(seatService).should().getSeatLayout(
+                eq(spaceId), eq(LocalDateTime.of(2026, 7, 20, 14, 30)));
+    }
+
+    @Test
+    void getSeatLayout_날짜시간형식이잘못되면_400() throws Exception {
+        mockMvc.perform(get("/api/spaces/{id}/seats", UUID.randomUUID())
+                        .param("at", "2026-07-20"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("COMMON-100"));
+    }
+
+    @Test
     void getSeatLayout_Guest_없는공간_404() throws Exception {
         given(seatService.getSeatLayout(any(), any())).willThrow(new SpaceNotFoundException());
 
@@ -65,6 +89,21 @@ class SeatControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.label").value("A-1"))
                 .andExpect(jsonPath("$.spaceName").value("제1열람실"));
+    }
+
+    @Test
+    void getSeatDetail_오프셋시각을KST로변환() throws Exception {
+        UUID seatId = UUID.randomUUID();
+        given(seatService.getSeatDetail(any(), any())).willReturn(new SeatDetailResponse(
+                seatId.toString(), "A-1", 1, 1, "RESERVED", List.of(),
+                UUID.randomUUID().toString(), "제1열람실"));
+
+        mockMvc.perform(get("/api/seats/{id}", seatId)
+                        .param("at", "2026-07-20T05:30:00Z"))
+                .andExpect(status().isOk());
+
+        then(seatService).should().getSeatDetail(
+                eq(seatId), eq(LocalDateTime.of(2026, 7, 20, 14, 30)));
     }
 
     @Test

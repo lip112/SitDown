@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +27,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class SeatService {
+
+    private static final ZoneOffset KST = ZoneOffset.ofHours(9);
 
     private final SeatRepository seatRepository;
     private final SpaceRepository spaceRepository;
@@ -80,12 +83,13 @@ public class SeatService {
 
         List<Seat> seats = seatRepository.findBySpaceIdOrderByRowNumAscColNumAsc(spaceId);
         Set<UUID> occupiedIds = Set.copyOf(reservationRepository.findOccupiedSeatIdsBySpaceId(spaceId, at));
+        SeatStatus occupiedStatus = resolveOccupiedStatus(at);
 
         int maxRow = seats.stream().mapToInt(Seat::getRowNum).max().orElse(0);
         int maxCol = seats.stream().mapToInt(Seat::getColNum).max().orElse(0);
 
         List<SeatItemResponse> seatResponses = seats.stream()
-                .map(seat -> SeatItemResponse.of(seat, resolveSeatStatus(seat, occupiedIds)))
+                .map(seat -> SeatItemResponse.of(seat, resolveSeatStatus(seat, occupiedIds, occupiedStatus)))
                 .collect(Collectors.toList());
 
         return new SeatLayoutResponse(spaceId.toString(), maxRow, maxCol, seatResponses);
@@ -96,16 +100,20 @@ public class SeatService {
         Seat seat = seatRepository.findById(seatId).orElseThrow(SeatNotFoundException::new);
         Set<UUID> occupiedIds = Set.copyOf(
                 reservationRepository.findOccupiedSeatIdsBySpaceId(seat.getSpace().getId(), at));
-        return SeatDetailResponse.of(seat, resolveSeatStatus(seat, occupiedIds));
+        return SeatDetailResponse.of(seat, resolveSeatStatus(seat, occupiedIds, resolveOccupiedStatus(at)));
     }
 
     /**
-     * 관리자 비활성화(isEnabled=false)가 현재 점유 여부보다 우선한다.
+     * 관리자 비활성화(isEnabled=false)가 예약/점유 여부보다 우선한다.
      * 점검 중인 좌석이 우연히 예약 없는 상태라도 AVAILABLE로 보이면 안 되기 때문이다.
      */
-    private SeatStatus resolveSeatStatus(Seat seat, Set<UUID> occupiedIds) {
+    private SeatStatus resolveSeatStatus(Seat seat, Set<UUID> occupiedIds, SeatStatus occupiedStatus) {
         if (!seat.isEnabled()) return SeatStatus.UNAVAILABLE;
-        if (occupiedIds.contains(seat.getId())) return SeatStatus.OCCUPIED;
+        if (occupiedIds.contains(seat.getId())) return occupiedStatus;
         return SeatStatus.AVAILABLE;
+    }
+
+    private SeatStatus resolveOccupiedStatus(LocalDateTime at) {
+        return at.isAfter(LocalDateTime.now(KST)) ? SeatStatus.RESERVED : SeatStatus.OCCUPIED;
     }
 }
